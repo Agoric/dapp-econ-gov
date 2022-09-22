@@ -75,7 +75,7 @@ const App = () => {
           <WalletConnection />
         </motion.div>
         <motion.div className="min-w-screen container mx-auto flex justify-center mt-16">
-          <Swap />
+          HI
         </motion.div>
       </motion.div>
     </>

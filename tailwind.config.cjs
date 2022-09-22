@@ -2,7 +2,6 @@
 module.exports = {
   mode: 'jit', // update this line
   purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
-  darkMode: false,
   theme: {
     extend: {
       colors: {
