@@ -20,6 +20,7 @@ import { watchContract, watchOffers, watchPurses } from 'utils/updates';
 
 import GovernanceTools from 'components/GovernanceTools';
 import 'styles/globals.css';
+import { WalletContext } from 'lib/wallet';
 
 interface Props {
   smartWalletProvisioned: boolean;
@@ -85,7 +86,9 @@ const App = (props: Props) => {
         <motion.div className="min-w-screen container p-4 mx-auto flex justify-between items-center">
           <img src={INTER_LOGO} className="item" alt="Inter Logo" width="200" />
           <WalletConnection />
-          {props.walletUtils.getWalletAddress()}
+          <WalletContext.Consumer>
+            {walletUtils => walletUtils.getWalletAddress()}
+          </WalletContext.Consumer>
         </motion.div>
         <motion.div className="min-w-screen container mx-auto flex justify-center mt-16">
           {smartWalletConnected ? <GovernanceTools /> : 'Connect wallet'}

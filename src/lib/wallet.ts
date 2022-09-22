@@ -1,7 +1,11 @@
 import { SigningStargateClient as AmbientClient } from '@cosmjs/stargate';
+import React from 'react';
 import { makeChainInfo } from './chainInfo.js';
 import { makeInteractiveSigner } from './keyManagement.js';
+import { boardSlottingMarshaller } from './rpc';
 import { makeRpcUtils } from './rpc.js';
+
+const marshaller = boardSlottingMarshaller();
 
 export const makeWalletUtils = async (agoricNet: string) => {
   // @ts-expect-error window type
@@ -45,6 +49,7 @@ export const makeWalletUtils = async (agoricNet: string) => {
   const walletKey = await keplr.getKey(chainKit.chainInfo.chainId);
 
   return {
+    chainKit,
     async isWalletProvisioned() {
       const { bech32Address } = walletKey;
 
@@ -60,6 +65,23 @@ export const makeWalletUtils = async (agoricNet: string) => {
     getWalletAddress() {
       return walletKey.bech32Address;
     },
+    makeOfferToAcceptInvitation(sourceContractName) {
+      const sourceContract = agoricNames.instance[sourceContractName];
+      assert(sourceContract, `missing contract ${sourceContractName}`);
+
+      const id = Math.round(Date.now() / 1000);
+
+      /** @type {import('../lib/psm.js').OfferSpec} */
+      return {
+        id,
+        invitationSpec: {
+          source: 'purse',
+          instance: sourceContract,
+          // description: 'Voter0', // XXX it may not always be
+        },
+        proposal: {},
+      };
+    },
     prepareToSign() {
       console.log('will sign with', chainKit.signer);
 
@@ -73,5 +95,21 @@ export const makeWalletUtils = async (agoricNet: string) => {
         }
       };
     },
+    sendOffer(offer) {
+      const payload = {
+        method: 'executeOffer',
+        offer,
+      };
+
+      const capData = marshaller.serialize(payload);
+      const message = JSON.stringify(capData);
+
+      return chainKit.signer.submitSpendAction(message);
+    },
   };
 };
+
+// XXX hard-coded
+export const devnetWalleUtils = await makeWalletUtils('devnet');
+
+export const WalletContext = React.createContext(devnetWalleUtils);
