@@ -9,9 +9,14 @@ import { makeWalletUtils } from 'lib/wallet';
 
 const walletUtils = await makeWalletUtils('devnet');
 
+const smartWalletProvisioned = await walletUtils.isWalletProvisioned();
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <App
+      smartWalletProvisioned={smartWalletProvisioned}
+      walletUtils={walletUtils}
+    />
   </React.StrictMode>
 );
 

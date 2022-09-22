@@ -8,7 +8,9 @@ export const makeWalletUtils = async (agoricNet: string) => {
   const { keplr } = window;
   assert(keplr, 'Missing keplr');
 
-  const { agoricNames, fromBoard } = await makeRpcUtils({ agoricNet });
+  const { agoricNames, fromBoard, vstorage } = await makeRpcUtils({
+    agoricNet,
+  });
   const makeChainKit = async (agoricNet: string) => {
     const netConfUrl = `https://${agoricNet}.agoric.net/network-config`;
     const networkConfig = await fetch(netConfUrl).then(r => r.json());
@@ -40,19 +42,36 @@ export const makeWalletUtils = async (agoricNet: string) => {
   const chainKit = await makeChainKit(agoricNet);
   console.log({ chainKit });
 
-  const prepareToSign = () => {
-    console.log('will sign with', chainKit.signer);
+  const walletKey = await keplr.getKey(chainKit.chainInfo.chainId);
 
-    async () => {
+  return {
+    async isWalletProvisioned() {
+      const { bech32Address } = walletKey;
+
+      console.log({ bech32Address });
+
       try {
-        const stuff = await chainKit.signer.getSequence();
-        console.log({ sequence: stuff });
-      } catch (notOnChain) {
-        console.error('getSequence', notOnChain);
-        alert(notOnChain.message);
+        vstorage.readAll(`published.wallet.${bech32Address}`);
+        return true;
+      } catch (_e) {
+        return false;
       }
-    };
-  };
+    },
+    getWalletAddress() {
+      return walletKey.bech32Address;
+    },
+    prepareToSign() {
+      console.log('will sign with', chainKit.signer);
 
-  return { prepareToSign };
+      async () => {
+        try {
+          const stuff = await chainKit.signer.getSequence();
+          console.log({ sequence: stuff });
+        } catch (notOnChain) {
+          console.error('getSequence', notOnChain);
+          alert(notOnChain.message);
+        }
+      };
+    },
+  };
 };
