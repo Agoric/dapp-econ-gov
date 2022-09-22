@@ -24,7 +24,6 @@ import { WalletContext } from 'lib/wallet';
 
 interface Props {
   smartWalletProvisioned: boolean;
-  walletUtils: any;
 }
 
 const App = (props: Props) => {
