@@ -2,6 +2,7 @@ import { WalletContext } from 'lib/wallet';
 
 interface Props {
   sourceContract: string;
+  description: string;
 }
 export default function AcceptInvitation(props: Props) {
   return (
@@ -12,7 +13,8 @@ export default function AcceptInvitation(props: Props) {
           title={props.sourceContract}
           onClick={() => {
             const offer = walletUtils.makeOfferToAcceptInvitation(
-              props.sourceContract
+              props.sourceContract,
+              props.description
             );
             walletUtils.sendOffer(offer);
           }}

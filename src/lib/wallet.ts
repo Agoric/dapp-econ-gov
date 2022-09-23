@@ -65,11 +65,16 @@ export const makeWalletUtils = async (agoricNet: string) => {
     getWalletAddress() {
       return walletKey.bech32Address;
     },
-    makeOfferToAcceptInvitation(sourceContractName) {
+    makeOfferToAcceptInvitation(
+      sourceContractName: string,
+      description: string
+    ) {
       const sourceContract = agoricNames.instance[sourceContractName];
       assert(sourceContract, `missing contract ${sourceContractName}`);
 
-      const id = Math.round(Date.now() / 1000);
+      // TODO query RPC for the high water mark
+      // xxx some message was sent in milliseconds so the high water got very high
+      const id = Date.now();
 
       /** @type {import('../lib/psm.js').OfferSpec} */
       return {
@@ -77,9 +82,26 @@ export const makeWalletUtils = async (agoricNet: string) => {
         invitationSpec: {
           source: 'purse',
           instance: sourceContract,
-          // description: 'Voter0', // XXX it may not always be
+          description,
         },
         proposal: {},
+      };
+    },
+    makeOfferToVote() {
+      // TODO query RPC to get the previous offer ID that endowed the wallet with invitationMakers for voting
+      // i.e. the offerStatus that has matching invitationSpec
+      const previousInvitationSpec = {
+        instanceName: 'economicCommittee',
+        // FIXME
+        description: 'Voter0',
+      };
+    },
+    makeOfferToProposeChange() {
+      // TODO query RPC to get the previous offer ID that endowed the wallet with invitationMakers for voting
+      // i.e. the offerStatus that has matching invitationSpec
+      const previousInvitationSpec = {
+        instanceName: 'psmCharter',
+        description: 'PSM charter member invitation',
       };
     },
     prepareToSign() {

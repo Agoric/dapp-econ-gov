@@ -3,6 +3,7 @@ import { useState } from 'react';
 import AcceptInvitation from './AcceptInvitation';
 import PsmGovernance from './PsmGovernance';
 
+// TODO fetch list from RPC
 const instances = ['psm-IST-AUSD', 'psm-IST-ELLIE'];
 
 interface Props {}
@@ -14,7 +15,10 @@ export default function PsmPanel(props: Props) {
     <div>
       You must first have received and accepted an invitation to the PSM
       Charter.
-      <AcceptInvitation sourceContract="psmCharter" />
+      <AcceptInvitation
+        sourceContract="psmCharter"
+        description="PSM charter member invitation"
+      />
       <Listbox value={selectedInstance} onChange={setSelectedInstance}>
         <Listbox.Button>{selectedInstance}</Listbox.Button>
         <Listbox.Options>
