@@ -2,9 +2,8 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 import { Tab } from '@headlessui/react';
 import clsx from 'clsx';
-import AcceptInvitation from './AcceptInvitation';
-import OpenQuestions from './OpenQuestions';
 import PsmPanel from './PsmPanel';
+import VotePanel from './VotePanel';
 
 export default function GovernanceTools() {
   const tabClassname = ({ selected }) =>
@@ -41,40 +40,7 @@ export default function GovernanceTools() {
             This will show proposed changes and their outcomes.
           </Tab.Panel>
           <Tab.Panel key="vote">
-            You must first have received and accepted an invitation to the
-            Economic Committee.
-            <AcceptInvitation
-              sourceContract="economicCommittee"
-              // FIXME multiple voters
-              // Need to look up the invitation from wallet 'balance' updates like,
-              // wallet update {
-              //   currentAmount: {
-              //     brand: { boardId: 'board02810', iface: 'Alleged: Zoe Invitation brand' },
-              //     value: [ [Object] ]
-              //   },
-              //   updated: 'balance'
-              // } [
-              //   {
-              //     description: 'Voter0',
-              //     handle: { boardId: null, iface: 'Alleged: InvitationHandle' },
-              //     installation: { boardId: 'board04312', iface: 'Alleged: BundleInstallation' },
-              //     instance: { boardId: 'board0074', iface: 'Alleged: InstanceHandle' }
-              //   }
-              // ]
-              //
-              // would be easier if the contracted match a substring instead of exact. but also more room for surprises.
-              // Since I have to query the update history anyway, I can just have the app load figure out the state of readiness:
-              // if you have no key, you have no account. connect Keplr.
-              // if you have no history, you have no smart wallet. go provision one
-              // for each contract privilege:
-              //   if you have no balance updates granting those, inform you're not on the committee
-              //   if you have unused invitation, prompt to accept it
-              //   record offerId of the offer in history in which the invitation was accepted
-              // now you have the wallet state to do privileged actions
-
-              description="Voter0"
-            />
-            <OpenQuestions />
+            <VotePanel />
           </Tab.Panel>
           <Tab.Panel
             key="propose"

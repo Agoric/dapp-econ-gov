@@ -58,7 +58,9 @@ export const makeWalletUtils = async (agoricNet: string) => {
   );
 
   // xxx mutable
-  let state;
+  let state:
+    | Awaited<ReturnType<typeof coalesceWalletState>>['state']
+    | undefined;
 
   return {
     chainKit,
@@ -68,6 +70,11 @@ export const makeWalletUtils = async (agoricNet: string) => {
       console.log('isWalletProvisioned', { state });
 
       return !!state;
+    },
+    invitationLike(descriptionSubstr) {
+      // FIXME hard-coded
+      const received = state.invitationsReceived.get('Voter0');
+      return received;
     },
     getWalletAddress() {
       return walletKey.bech32Address;
