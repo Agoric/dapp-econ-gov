@@ -1,31 +1,29 @@
+import { makeFollower, makeLeader } from '@agoric/casting';
+import { coalesceWalletState } from '@agoric/smart-wallet/src/utils.js';
 import { SigningStargateClient as AmbientClient } from '@cosmjs/stargate';
 import React from 'react';
-import { makeChainInfo } from './chainInfo.js';
+import { suggestChain } from './chainInfo.js';
 import { makeInteractiveSigner } from './keyManagement.js';
-import { boardSlottingMarshaller } from './rpc';
+import { boardSlottingMarshaller, networkConfig } from './rpc';
 import { makeRpcUtils } from './rpc.js';
 
 const marshaller = boardSlottingMarshaller();
 
 export const makeWalletUtils = async (agoricNet: string) => {
-  // @ts-expect-error window type
-  const { keplr } = window;
+  const { keplr } = window as import('@keplr-wallet/types').Window;
   assert(keplr, 'Missing keplr');
 
-  const { agoricNames, fromBoard, vstorage } = await makeRpcUtils({
+  const { agoricNames, fromBoard } = await makeRpcUtils({
     agoricNet,
   });
   const makeChainKit = async (agoricNet: string) => {
-    const netConfUrl = `https://${agoricNet}.agoric.net/network-config`;
-    const networkConfig = await fetch(netConfUrl).then(r => r.json());
-
-    const chainInfo = makeChainInfo(
-      netConfUrl,
-      networkConfig.rpcAddrs[0],
-      networkConfig.chainName,
-      'caption???'
-    );
-    console.log({ networkConfig: netConfUrl });
+    const chainInfo: import('@keplr-wallet/types').ChainInfo =
+      await suggestChain(
+        // FIXME condition on agoricNet arg
+        // XXX requires @agoric/wallet-ui start
+        'http://0.0.0.0:3000/wallet/network-config',
+        { fetch: window.fetch, keplr, random: Math.random }
+      );
 
     const signer = await makeInteractiveSigner(
       chainInfo,
@@ -33,12 +31,13 @@ export const makeWalletUtils = async (agoricNet: string) => {
       AmbientClient.connectWithSigner
     );
 
+    const leader = makeLeader(networkConfig.rpcAddrs[0]);
+
     return {
       chainInfo,
-      faucet: `https://${agoricNet}.faucet.agoric.net/`,
       agoricNames,
       fromBoard,
-      clock: () => Date.now(),
+      leader,
       signer,
     };
   };
@@ -48,19 +47,27 @@ export const makeWalletUtils = async (agoricNet: string) => {
 
   const walletKey = await keplr.getKey(chainKit.chainInfo.chainId);
 
+  const unserializer = boardSlottingMarshaller(fromBoard.convertSlotToVal);
+
+  const follower = await makeFollower(
+    `:published.wallet.${walletKey.bech32Address}`,
+    chainKit.leader,
+    {
+      unserializer,
+    }
+  );
+
+  // xxx mutable
+  let state;
+
   return {
     chainKit,
     async isWalletProvisioned() {
-      const { bech32Address } = walletKey;
+      state = await coalesceWalletState(follower);
 
-      console.log({ bech32Address });
+      console.log('isWalletProvisioned', { state });
 
-      try {
-        vstorage.readAll(`published.wallet.${bech32Address}`);
-        return true;
-      } catch (_e) {
-        return false;
-      }
+      return !!state;
     },
     getWalletAddress() {
       return walletKey.bech32Address;
@@ -132,6 +139,7 @@ export const makeWalletUtils = async (agoricNet: string) => {
 };
 
 // XXX hard-coded
-export const devnetWalleUtils = await makeWalletUtils('devnet');
+// export const devnetWalleUtils = await makeWalletUtils('devnet');
+export const localWalleUtils = await makeWalletUtils('local');
 
-export const WalletContext = React.createContext(devnetWalleUtils);
+export const WalletContext = React.createContext(localWalleUtils);

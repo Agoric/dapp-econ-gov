@@ -26,15 +26,13 @@ export const bech32Config: Bech32Config = {
 };
 
 /**
- * @param networkConfig URL
- * @param rpcAddr URL or origin
+ * @param {string} networkConfig URL
+ * @param {string} rpcAddr URL or origin
+ * @param {string} chainId
+ * @param {string} [caption]
+ * @returns {import('@keplr-wallet/types').ChainInfo}
  */
-export const makeChainInfo = (
-  networkConfig: string,
-  rpcAddr: string,
-  chainId: string,
-  caption?: string
-): ChainInfo => {
+const makeChainInfo = (networkConfig, rpcAddr, chainId, caption) => {
   const coinType = Number(
     new URL(networkConfig).searchParams.get('coinType') || AGORIC_COIN_TYPE
   );
@@ -43,7 +41,8 @@ export const makeChainInfo = (
   let rpc;
   let api;
 
-  if (network !== hostname) {
+  // XXX I don't know why this doesn't work here like it does in agoric-sdk
+  if (false && network !== hostname) {
     rpc = `https://${network}.rpc.agoric.net`;
     api = `https://${network}.api.agoric.net`;
   } else {
@@ -65,6 +64,40 @@ export const makeChainInfo = (
     currencies: [stakeCurrency, stableCurrency],
     feeCurrencies: [stableCurrency],
     features: ['stargate', 'ibc-transfer'],
-    // gasPriceStep is no more?
+    gasPriceStep: {
+      low: 0,
+      average: 0,
+      high: 0,
+    },
   };
 };
+
+/**
+ * @param {string} networkConfig URL
+ * @param {object} io
+ * @param {typeof fetch} io.fetch
+ * @param {import('@keplr-wallet/types').Keplr} io.keplr
+ * @param {typeof Math.random} io.random
+ * @param {string} [caption]
+ */
+export async function suggestChain(
+  networkConfig,
+  { fetch, keplr, random },
+  caption = undefined
+) {
+  console.log('suggestChain: fetch', networkConfig); // log net IO
+  const res = await fetch(networkConfig);
+  if (!res.ok) {
+    throw Error(`Cannot fetch network: ${res.status}`);
+  }
+  const { chainName: chainId, rpcAddrs } = await res.json();
+  const rpcAddr = rpcAddrs[Math.floor(random() * rpcAddrs.length)];
+
+  const chainInfo = makeChainInfo(networkConfig, rpcAddr, chainId, caption);
+  console.log('chainInfo', chainInfo);
+  await keplr.experimentalSuggestChain(chainInfo);
+  await keplr.enable(chainId);
+  console.log('keplr.enable chainId =', chainId, 'done');
+
+  return chainInfo;
+}

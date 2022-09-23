@@ -2,8 +2,6 @@
 // @ts-check
 /// <reference types="ses"/>
 
-import { NonNullish } from '@agoric/assert';
-
 /**
  * @typedef {{boardId: string, iface: string}} RpcRemote
  */
@@ -13,15 +11,9 @@ export const networkConfigUrl = agoricNetSubdomain =>
 export const rpcUrl = agoricNetSubdomain =>
   `https://${agoricNetSubdomain}.rpc.agoric.net:443`;
 
-/**
- * @typedef {{ rpcAddrs: string[], chainName: string }} MinimalNetworkConfig
- */
+type MinimalNetworkConfig = { rpcAddrs: string[]; chainName: string };
 
-/**
- *  @param {string} str
- * @returns {Promise<MinimalNetworkConfig>}
- */
-const fromAgoricNet = (str: string) => {
+const fromAgoricNet = (str: string): Promise<MinimalNetworkConfig> => {
   const [netName, chainName] = str.split(',');
   if (chainName) {
     return Promise.resolve({ chainName, rpcAddrs: [rpcUrl(netName)] });
@@ -29,15 +21,12 @@ const fromAgoricNet = (str: string) => {
   return fetch(networkConfigUrl(netName)).then(res => res.json());
 };
 
-/** @type {MinimalNetworkConfig} */
-export let networkConfig =
-  // XXX hard coded
-  await fromAgoricNet('devnet');
+// XXX hard coded default to local
+export let networkConfig: MinimalNetworkConfig = {
+  rpcAddrs: ['http://0.0.0.0:26657'],
+  chainName: 'agoric',
+};
 
-/**
- *
- * @param {object} powers
- */
 export const makeVStorage = () => {
   const getJSON = path => {
     const url = networkConfig.rpcAddrs[0] + path;
@@ -236,7 +225,11 @@ export const makeAgoricNames = async (ctx, vstorage) => {
 };
 
 export const makeRpcUtils = async ({ agoricNet }) => {
-  networkConfig = await fromAgoricNet(NonNullish(agoricNet));
+  networkConfig =
+    agoricNet === 'local'
+      ? { rpcAddrs: ['http://0.0.0.0:26657'], chainName: 'agoric' }
+      : await fromAgoricNet(agoricNet);
+
   const vstorage = makeVStorage();
   const fromBoard = makeFromBoard();
   const agoricNames = await makeAgoricNames(fromBoard, vstorage);

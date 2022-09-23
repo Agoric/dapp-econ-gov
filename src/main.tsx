@@ -5,13 +5,13 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-import { devnetWalleUtils, WalletContext } from 'lib/wallet';
+import { localWalleUtils, WalletContext } from 'lib/wallet';
 
-const smartWalletProvisioned = await devnetWalleUtils.isWalletProvisioned();
+const smartWalletProvisioned = await localWalleUtils.isWalletProvisioned();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <WalletContext.Provider value={devnetWalleUtils}>
+    <WalletContext.Provider value={localWalleUtils}>
       <App smartWalletProvisioned={smartWalletProvisioned} />
     </WalletContext.Provider>
   </React.StrictMode>
