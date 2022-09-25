@@ -23,8 +23,10 @@ export default function VotePanel(props: Props) {
         Committee.
         <AcceptInvitation
           description={invitationRecord.description}
+          // TODO validate earlier that this invitation is from this contract
           sourceContract="economicCommittee"
         />
+        And then <b>reload the page</b>.
       </div>
     );
   }
@@ -33,7 +35,7 @@ export default function VotePanel(props: Props) {
     <div>
       <p>
         You may vote using the invitation makers from offer{' '}
-        <tt>{previousOfferId}</tt>
+        <code>{previousOfferId}</code>
       </p>
       <OpenQuestions />
     </div>

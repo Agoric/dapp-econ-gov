@@ -72,9 +72,18 @@ export const makeWalletUtils = async (agoricNet: string) => {
       return !!state;
     },
     invitationLike(descriptionSubstr) {
-      // FIXME hard-coded
-      const received = state.invitationsReceived.get('Voter0');
-      return received;
+      const map = state.invitationsReceived as Map<
+        string,
+        {
+          acceptedIn: number;
+          description: string;
+          instance: { boardId: string };
+        }
+      >;
+      const match = Array.from(map.values()).find(r =>
+        r.description.includes(descriptionSubstr)
+      );
+      return match;
     },
     getWalletAddress() {
       return walletKey.bech32Address;
@@ -106,7 +115,7 @@ export const makeWalletUtils = async (agoricNet: string) => {
       // i.e. the offerStatus that has matching invitationSpec
       const previousInvitationSpec = {
         instanceName: 'economicCommittee',
-        // FIXME
+        // FIXME hard-coded
         description: 'Voter0',
       };
     },
