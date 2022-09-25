@@ -45,17 +45,16 @@ export const makeWalletUtils = async (agoricNet: string) => {
   const chainKit = await makeChainKit(agoricNet);
   console.log({ chainKit });
 
-  const walletKey = await keplr.getKey(chainKit.chainInfo.chainId);
-
   const unserializer = boardSlottingMarshaller(fromBoard.convertSlotToVal);
 
-  const follower = await makeFollower(
-    `:published.wallet.${walletKey.bech32Address}`,
-    chainKit.leader,
-    {
+  // XXX factor out of wallet
+  const follow = (path: string) =>
+    makeFollower(path, chainKit.leader, {
       unserializer,
-    }
-  );
+    });
+
+  const walletKey = await keplr.getKey(chainKit.chainInfo.chainId);
+  const follower = await follow(`:published.wallet.${walletKey.bech32Address}`);
 
   // xxx mutable
   let state:
@@ -64,6 +63,7 @@ export const makeWalletUtils = async (agoricNet: string) => {
 
   return {
     chainKit,
+    follow,
     async isWalletProvisioned() {
       state = await coalesceWalletState(follower);
 

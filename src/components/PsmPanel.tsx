@@ -5,11 +5,13 @@ import AcceptInvitation from './AcceptInvitation';
 import PsmGovernance from './PsmGovernance';
 
 // TODO fetch list from RPC
-const instances = ['psm-IST-AUSD', 'psm-IST-ELLIE'];
+// const instances = ['psm-IST-AUSD', 'psm-IST-ELLIE'];
+const instances = ['psm-IST-AUSD'];
 
 interface Props {}
 
 export default function PsmPanel(props: Props) {
+  const [selectedInstance, setSelectedInstance] = useState(instances[0]);
   const walletUtils = useContext(WalletContext);
   const invitationRecord = walletUtils.invitationLike(
     'PSM charter member invitation'
@@ -34,8 +36,6 @@ export default function PsmPanel(props: Props) {
     );
   }
   const previousOfferId = invitationRecord.acceptedIn;
-
-  const [selectedInstance, setSelectedInstance] = useState(instances[0]);
 
   return (
     <div>
