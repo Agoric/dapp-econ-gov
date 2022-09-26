@@ -31,8 +31,6 @@ export default function ProposeChange(props: Props) {
         <h3>{name}</h3>
       </legend>
       {changer}
-      <br />
-      <button>Submit proposal</button>
     </fieldset>
   );
 }
