@@ -10,7 +10,7 @@ export const networkConfigUrl = (agoricNetName: string) => {
   if (agoricNetName === 'local') {
     return 'http://0.0.0.0:3000/wallet/network-config';
   } else {
-    return `${agoricNetName}.agoric.net/network-config`;
+    return `https://${agoricNetName}.agoric.net/network-config`;
   }
 };
 export const rpcUrl = agoricNetSubdomain =>
