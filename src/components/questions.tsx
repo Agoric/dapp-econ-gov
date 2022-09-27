@@ -58,7 +58,12 @@ export function VoteOnLatestQuestion() {
             </RadioGroup.Option>
           ))}
         </RadioGroup>
-        <input type="submit" value="Submit vote" disabled={!position} />
+        <input
+          type="submit"
+          value="Submit vote"
+          disabled={!position}
+          className="btn-primary p-1 rounded mt-2"
+        />
       </form>
     </>
   );

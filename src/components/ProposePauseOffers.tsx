@@ -37,10 +37,10 @@ export default function ProposePauseOffers(props: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="mt-16" onSubmit={handleSubmit}>
       <h3>VoteOnPauseOffers</h3>
 
-      <div>
+      <div className="mt-2">
         {Object.keys(checked).map(str => (
           <label key={str}>
             {str}
@@ -63,7 +63,11 @@ export default function ProposePauseOffers(props: Props) {
         />
       </label>
 
-      <input type="submit" value="Propose pausing offers" />
+      <input
+        type="submit"
+        value="Propose pausing offers"
+        className="btn-primary p-1 rounded mt-2"
+      />
     </form>
   );
 }
