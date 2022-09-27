@@ -1,5 +1,4 @@
-import { iterateReverse, makeFollower, makeLeader } from '@agoric/casting';
-import { makeWalletStateCoalescer } from '@agoric/smart-wallet/src/utils.js';
+import { makeFollower, makeLeader } from '@agoric/casting';
 import { SigningStargateClient as AmbientClient } from '@cosmjs/stargate';
 import React from 'react';
 import { suggestChain } from './chainInfo.js';
@@ -69,9 +68,7 @@ export const makeWalletUtils = async (agoricNet: string) => {
   const follower = await follow(`:published.wallet.${walletKey.bech32Address}`);
 
   // xxx mutable
-  let state:
-    | Awaited<ReturnType<typeof coalesceWalletState>>['state']
-    | undefined;
+  let state: Awaited<ReturnType<typeof coalesceWalletState>> | undefined;
 
   function invitationLike(descriptionSubstr: string) {
     const map = state.invitationsReceived as Map<
