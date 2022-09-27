@@ -1,7 +1,7 @@
 import './installSesLockdown';
-import { motion } from 'framer-motion';
-import { useEffect, useReducer } from 'react';
+
 import { useAtom } from 'jotai';
+import { useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -19,8 +19,8 @@ import {
 import { watchContract, watchOffers, watchPurses } from 'utils/updates';
 
 import GovernanceTools from 'components/GovernanceTools';
-import 'styles/globals.css';
 import { WalletContext } from 'lib/wallet';
+import 'styles/globals.css';
 
 interface Props {
   smartWalletProvisioned: boolean;
@@ -36,11 +36,6 @@ const App = (props: Props) => {
     governedParamsIndexAtom
   );
   const [_instanceIds, setInstanceIds] = useAtom(instanceIdsAtom);
-
-  const [counter, increment] = useReducer(x => x + 1, 0);
-  setInterval(() => {
-    increment();
-  }, 1000);
 
   useEffect(() => {
     if (wallet === null) return;
@@ -59,7 +54,6 @@ const App = (props: Props) => {
       setInstanceIds,
     });
   }, [
-    counter,
     wallet,
     mergeBrandToInfo,
     setPurses,
@@ -77,7 +71,6 @@ const App = (props: Props) => {
   }
   return (
     <>
-      <p>{counter}</p>
       <ToastContainer
         enableMultiContainer
         containerId={'Info'}
@@ -90,7 +83,7 @@ const App = (props: Props) => {
       <div>
         <div className="min-w-screen container p-4 mx-auto flex justify-between items-center">
           <img src={INTER_LOGO} className="item" alt="Inter Logo" width="200" />
-          {/* <WalletConnection /> */}
+          <WalletConnection />
           <WalletContext.Consumer>
             {walletUtils => walletUtils.getWalletAddress()}
           </WalletContext.Consumer>

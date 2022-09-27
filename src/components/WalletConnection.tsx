@@ -1,10 +1,8 @@
 import { makeReactAgoricWalletConnection } from '@agoric/web-components/react';
-import React, { useCallback } from 'react';
 import { E } from '@endo/eventual-send';
-import { Popover } from '@headlessui/react';
-import { BiChevronDown } from 'react-icons/bi';
 import { dappConfig } from 'config';
 import { useAtom } from 'jotai';
+import React, { useCallback } from 'react';
 import { walletAtom } from 'store/app';
 
 // Create a wrapper for agoric-wallet-connection that is specific to
@@ -13,7 +11,7 @@ const AgoricWalletConnection = makeReactAgoricWalletConnection(React);
 
 const WalletConnection = () => {
   const { CONTRACT_NAME } = dappConfig;
-  const [_wallet, setWallet] = useAtom(walletAtom);
+  const [wallet, setWallet] = useAtom(walletAtom);
 
   const onWalletState = useCallback(
     (ev: any) => {
@@ -42,30 +40,10 @@ const WalletConnection = () => {
     [CONTRACT_NAME, setWallet]
   );
 
+  if (wallet) return;
+
   return (
-    <Popover className="relative">
-      {({ open }) => (
-        <>
-          <Popover.Button className="border border-primary focus:outline-none group inline-flex items-center rounded-md px-3 py-2 bg-transparent text-base font-medium text-primary">
-            <span>Wallet</span>
-            <BiChevronDown className="ml-2 h-5 w-5" aria-hidden="true" />
-          </Popover.Button>
-          <Popover.Panel
-            static
-            className={`${
-              !open ? 'hidden' : ''
-            } absolute z-10 mt-3 max-w-sm right-0 bg-white`}
-          >
-            <div className="overflow-hidden rounded-lg shadow-lg border border-black border-opacity-5">
-              <AgoricWalletConnection
-                onState={onWalletState}
-                useLocalStorage={true}
-              />
-            </div>
-          </Popover.Panel>
-        </>
-      )}
-    </Popover>
+    <AgoricWalletConnection onState={onWalletState} useLocalStorage={true} />
   );
 };
 
