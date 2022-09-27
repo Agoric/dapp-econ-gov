@@ -4,7 +4,11 @@ import { SigningStargateClient as AmbientClient } from '@cosmjs/stargate';
 import React from 'react';
 import { suggestChain } from './chainInfo.js';
 import { makeInteractiveSigner } from './keyManagement.js';
-import { boardSlottingMarshaller, networkConfig } from './rpc';
+import {
+  boardSlottingMarshaller,
+  networkConfig,
+  networkConfigUrl,
+} from './rpc';
 import { makeRpcUtils } from './rpc.js';
 
 import { Amount } from '@agoric/ertp';
@@ -26,12 +30,11 @@ export const makeWalletUtils = async (agoricNet: string) => {
   });
   const makeChainKit = async (agoricNet: string) => {
     const chainInfo: import('@keplr-wallet/types').ChainInfo =
-      await suggestChain(
-        // FIXME condition on agoricNet arg
-        // XXX requires @agoric/wallet-ui start
-        'http://0.0.0.0:3000/wallet/network-config',
-        { fetch: window.fetch, keplr, random: Math.random }
-      );
+      await suggestChain(networkConfigUrl(agoricNet), {
+        fetch: window.fetch,
+        keplr,
+        random: Math.random,
+      });
 
     const signer = await makeInteractiveSigner(
       chainInfo,
@@ -234,11 +237,12 @@ export const makeWalletUtils = async (agoricNet: string) => {
   };
 };
 
-// XXX hard-coded
-// export const devnetWalleUtils = await makeWalletUtils('devnet');
-export const localWalleUtils = await makeWalletUtils('local');
+const usp = new URLSearchParams(window.location.search);
+const agoricNet = usp.get('agoricNet') || 'devnet';
+console.log('RPC server:', agoricNet);
+export const walletUtils = await makeWalletUtils(agoricNet);
 
-export const WalletContext = React.createContext(localWalleUtils);
+export const WalletContext = React.createContext(walletUtils);
 
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable jsx-a11y/anchor-has-content */
