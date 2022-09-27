@@ -1,5 +1,6 @@
 import { makeReactAgoricWalletConnection } from '@agoric/web-components/react';
 import { E } from '@endo/eventual-send';
+import clsx from 'clsx';
 import { dappConfig } from 'config';
 import { useAtom } from 'jotai';
 import React, { useCallback } from 'react';
@@ -16,7 +17,7 @@ const WalletConnection = () => {
   const onWalletState = useCallback(
     (ev: any) => {
       const { walletConnection, state } = ev.detail;
-      console.debug('wallet:', state);
+      console.log('wallet state:', state);
       // FIXME: Better state management, including in the web component level.
       switch (state) {
         case 'idle': {
@@ -40,10 +41,12 @@ const WalletConnection = () => {
     [CONTRACT_NAME, setWallet]
   );
 
-  if (wallet) return;
-
   return (
-    <AgoricWalletConnection onState={onWalletState} useLocalStorage={true} />
+    <AgoricWalletConnection
+      onState={onWalletState}
+      useLocalStorage={true}
+      style={{ display: wallet && 'none' }}
+    />
   );
 };
 

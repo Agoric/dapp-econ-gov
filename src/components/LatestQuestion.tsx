@@ -2,6 +2,7 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 import { WalletContext } from 'lib/wallet';
 import { useContext, useEffect, useState } from 'react';
+import { bigintStringify } from '@agoric/wallet-backend/src/bigintStringify.js';
 
 const usePublishedDatum = path => {
   const [status, setStatus] = useState('idle');
@@ -11,18 +12,15 @@ const usePublishedDatum = path => {
   useEffect(() => {
     const { follow } = walletUtils;
     const fetchData = async () => {
-      // FIXME match instanceName, pass as tuple instead
       const follower = await follow(`:published.${path}`);
-
-      setStatus('following');
       const iterable: AsyncIterable<Record<string, unknown>> =
         await follower.getLatestIterable();
       setStatus('got iterable');
       const iterator = iterable[Symbol.asyncIterator]();
-      setStatus('got iterator');
+      setStatus('awaiting a question');
       const { value: publishedValue } = await iterator.next();
-      setData(publishedValue);
-      setStatus('received');
+      setData(publishedValue.value);
+      setStatus('latest question');
     };
     fetchData().catch(e => console.error('useEffect error', e));
   }, [path, walletUtils]);
@@ -35,10 +33,20 @@ export default function LatestQuestion(props: Props) {
     'committees.Initial_Economic_Committee.latestQuestion'
   );
 
-  console.log('render LatestQuestion', status, data);
+  console.log('render LatestQuestion', status, Object.entries(data));
   return (
     <>
       <b>{status}</b>
+      <table>
+        {Object.entries(data).map(([k, v]) => (
+          <tr key={k}>
+            <th>{k}</th>
+            <td>
+              <tt>{bigintStringify(v)}</tt>
+            </td>
+          </tr>
+        ))}
+      </table>
     </>
   );
 }
