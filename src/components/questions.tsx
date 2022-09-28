@@ -3,25 +3,64 @@ import { RadioGroup } from '@headlessui/react';
 import { usePublishedDatum, WalletContext } from 'lib/wallet';
 import { useContext, useState } from 'react';
 
+import {
+  QuestionDetails as IQuestionDetails,
+  OfferFilterSpec,
+  OutcomeRecord,
+} from '../govTypes.js';
+
 export const showTimestamp = (ms: number) => new Date(ms).toISOString();
 
-export function QuestionDetails(props: { details: any }) {
-  const { details } = props;
+const choice = (label: string, _name: string, val: string) => (
+  <label>
+    {label} <b>{val}</b>
+  </label>
+);
 
+function FilterIssueOutcome(
+  { issue }: OfferFilterSpec,
+  outcome?: OutcomeRecord
+) {
   return (
     <>
-      <table>
-        <tbody>
-          {Object.entries(details).map(([k, v]) => (
-            <tr key={k}>
-              <th>{k}</th>
-              <td>
-                <pre>{bigintStringify(v)}</pre>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      Proposal: set filtered offers to{' '}
+      <code>{bigintStringify(issue.strings)}</code>
+      <br />
+      {outcome ? (
+        outcome.outcome === 'win' ? (
+          <>
+            <strong>PASS</strong>. updated filters:{' '}
+            {bigintStringify(outcome.position.strings)}
+          </>
+        ) : (
+          'FAIL'
+        )
+      ) : (
+        ''
+      )}
+    </>
+  );
+}
+
+export function QuestionDetails(props: {
+  details: IQuestionDetails;
+  outcome?: OutcomeRecord;
+}) {
+  const { details, outcome } = props;
+  console.debug('QuestionDetails', details);
+  return (
+    <>
+      Deadline: {showTimestamp(Number(details.closingRule.deadline) * 1000)}
+      <br />
+      <small>
+        {choice('Type', 'electionType', details.electionType)}{' '}
+        {choice('Quorum', 'quorumRule', details.quorumRule)}{' '}
+        {choice('Method', 'method', details.method)}
+      </small>
+      <br />
+      {details.electionType === 'offer_filter'
+        ? FilterIssueOutcome(details, outcome)
+        : '???'}
     </>
   );
 }
@@ -69,6 +108,7 @@ export function VoteOnLatestQuestion() {
               >
                 {({ checked }) => (
                   <span className={checked ? 'bg-blue-200' : ''}>
+                    {index === 0 ? 'YES: ' : ''}
                     {bigintStringify(pos)}
                   </span>
                 )}
