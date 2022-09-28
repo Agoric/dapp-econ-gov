@@ -1,8 +1,8 @@
 import { Amount, Brand } from '@agoric/ertp';
 import { Ratio } from '@agoric/zoe/src/contractSupport';
 
-// Endo
-type Remotable = { boardId: string; iface?: string };
+// Endo with boardId marshaling
+export type Remotable = { boardId: string; iface?: string };
 
 // Zoe
 type Timer = Remotable;

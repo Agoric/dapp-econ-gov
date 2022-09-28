@@ -12,6 +12,7 @@ import {
   ParamChangeSpec,
   OfferFilterSpec,
   OutcomeRecord,
+  Remotable,
 } from '../govTypes.js';
 import { AssetKind, Amount } from '@agoric/ertp';
 
@@ -53,11 +54,15 @@ function ParamChanges(props: { changes: Record<string, unknown> }) {
 
 function ParamChangeIssueOutcome(
   { issue }: ParamChangeSpec,
-  outcome?: OutcomeRecord
+  outcome?: OutcomeRecord,
+  instance?: [name: string, value: Remotable][]
 ) {
+  const name =
+    instance && instance.find(([_n, i]) => i === issue.contract)?.[0];
   return (
     <>
-      Proposal: change parameters: <ParamChanges changes={issue.spec.changes} />
+      Proposal: change {name} parameters:{' '}
+      <ParamChanges changes={issue.spec.changes} />
       <br />
       {outcome ? (
         outcome.outcome === 'win' ? (
@@ -103,14 +108,16 @@ function FilterIssueOutcome(
 export function QuestionDetails(props: {
   details: IQuestionDetails;
   outcome?: OutcomeRecord;
+  instance?: [property: string, value: Remotable][];
 }) {
-  const { details, outcome } = props;
+  const { details, outcome, instance } = props;
   console.debug('QuestionDetails', details);
   return (
     <>
       Deadline: {showTimestamp(Number(details.closingRule.deadline) * 1000)}
       <br />
       <small>
+        Handle <strong>{details.questionHandle.boardId} </strong>
         {choice('Type', 'electionType', details.electionType)}{' '}
         {choice('Quorum', 'quorumRule', details.quorumRule)}{' '}
         {choice('Method', 'method', details.method)}
@@ -119,7 +126,7 @@ export function QuestionDetails(props: {
       {details.electionType === 'offer_filter'
         ? FilterIssueOutcome(details, outcome)
         : details.electionType === 'param_change'
-        ? ParamChangeIssueOutcome(details, outcome)
+        ? ParamChangeIssueOutcome(details, outcome, instance)
         : '???'}
     </>
   );
