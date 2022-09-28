@@ -16,7 +16,24 @@ import {
 } from '../govTypes.js';
 import { AssetKind, Amount } from '@agoric/ertp';
 
-export const showTimestamp = (ms: number) => new Date(ms).toISOString();
+export function OfferId(props: { id: number }) {
+  const { id } = props;
+
+  let title = '';
+  try {
+    title = new Date(id).toISOString();
+  } catch (err) {
+    console.debug('not a timestamp', id, err);
+  }
+  return <code title={title}>{id}</code>;
+}
+
+export function ZoeTime(props: { seconds: bigint }) {
+  const { seconds } = props;
+
+  const when = new Date(Number(seconds) * 1000).toISOString();
+  return <strong>{when}</strong>;
+}
 
 const choice = (label: string, _name: string, val: string) => (
   <label>
@@ -138,7 +155,7 @@ export function QuestionDetails(props: {
   console.debug('QuestionDetails', details);
   return (
     <>
-      Deadline: {showTimestamp(Number(details.closingRule.deadline) * 1000)}
+      Deadline: <ZoeTime seconds={details.closingRule.deadline} />
       <br />
       <small>
         Handle <strong>{details.questionHandle.boardId} </strong>
