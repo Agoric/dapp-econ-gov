@@ -27,7 +27,7 @@ type ClosingRule = {
 };
 
 type SupportedParamValue = Amount | Ratio;
-type ChangeParamsPosition = Record<string, SupportedParamValue>;
+export type ChangeParamsPosition = Record<string, SupportedParamValue>;
 type NoChangeParamsPosition = { noChange: string[] };
 type ParamChangePositions = {
   positive: ChangeParamsPosition;

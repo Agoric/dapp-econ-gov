@@ -10,6 +10,7 @@ import { displayFunctionsAtom } from 'store/app';
 import {
   QuestionDetails as IQuestionDetails,
   ParamChangeSpec,
+  ChangeParamsPosition,
   OfferFilterSpec,
   OutcomeRecord,
   RpcRemote,
@@ -109,7 +110,9 @@ function paramChangeOutcome(
         outcome.outcome === 'win' ? (
           <>
             <strong>PASS</strong>. parameter changed to{' '}
-            <ParamChanges changes={outcome.position.changes} />
+            <ParamChanges
+              changes={(outcome.position as ChangeParamsPosition).changes}
+            />
           </>
         ) : (
           <strong>FAIL</strong>
