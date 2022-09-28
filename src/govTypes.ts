@@ -35,7 +35,7 @@ type ParamChangePositions = {
   positive: ChangeParamsPosition;
   negative: NoChangeParamsPosition;
 };
-type ParamChangesSpec<P> = {
+export type ParamChangesSpec<P = StandardParamPath> = {
   paramPath: P;
   changes: Record<string, ParamValue>;
 };
