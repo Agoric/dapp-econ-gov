@@ -1,17 +1,23 @@
+/**
+ * @file types adapted from '@agoric/governance/src/types.js'
+ *
+ * XXX much/most of this is copied and could get out of sync.
+ * TODO: import them https://github.com/Agoric/agoric-sdk/issues/6343
+ */
 import { Amount, Brand } from '@agoric/ertp';
 import { Ratio } from '@agoric/zoe/src/contractSupport';
 
 // Endo with boardId marshaling
-export type Remotable = { boardId: string; iface?: string };
+export type RpcRemote = { boardId: string; iface?: string };
 
 // Zoe
-type Timer = Remotable;
-type Instance = Remotable;
-type Installation = Remotable;
+type Timer = RpcRemote;
+type Instance = RpcRemote;
 type Handle<H extends string> = H & Record<string, never>;
 
 // '@agoric/governance/src/types.js'
-type ElectionType = 'param_change' | 'offer_filter';
+/** This Dapp supports a subset of the full ElectionType. */
+type SupportedElectionType = 'param_change' | 'offer_filter';
 type QuorumRule = 'majority' | 'all' | 'no_quorum';
 type ChoiceMethod = 'unranked' | 'order';
 type Timestamp = bigint;
@@ -20,16 +26,8 @@ type ClosingRule = {
   deadline: Timestamp;
 };
 
-type ParamValue =
-  | Amount
-  | Brand
-  | Installation
-  | Instance
-  | bigint
-  | Ratio
-  | string
-  | unknown;
-type ChangeParamsPosition = Record<string, ParamValue>;
+type SupportedParamValue = Amount | Ratio;
+type ChangeParamsPosition = Record<string, SupportedParamValue>;
 type NoChangeParamsPosition = { noChange: string[] };
 type ParamChangePositions = {
   positive: ChangeParamsPosition;
@@ -37,7 +35,7 @@ type ParamChangePositions = {
 };
 export type ParamChangesSpec<P = StandardParamPath> = {
   paramPath: P;
-  changes: Record<string, ParamValue>;
+  changes: Record<string, SupportedParamValue>;
 };
 type StandardParamPath = { key: string };
 type ParamChangeIssue<P = StandardParamPath> = {
@@ -73,7 +71,9 @@ export type QuestionDetails = QuestionSpec & {
   questionHandle: Handle<'Question'>;
 };
 
-export type OutcomeRecord<ET extends ElectionType = ElectionType> = {
+export type OutcomeRecord<
+  ET extends SupportedElectionType = SupportedElectionType
+> = {
   question: Handle<'Question'>;
 } & (
   | {

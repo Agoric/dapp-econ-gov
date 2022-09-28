@@ -12,7 +12,7 @@ import {
   ParamChangeSpec,
   OfferFilterSpec,
   OutcomeRecord,
-  Remotable,
+  RpcRemote,
 } from '../govTypes.js';
 import { AssetKind, Amount } from '@agoric/ertp';
 
@@ -93,10 +93,10 @@ function ParamChanges(props: { changes: Record<string, unknown> }) {
   );
 }
 
-function ParamChangeIssueOutcome(
+function paramChangeOutcome(
   { issue }: ParamChangeSpec,
   outcome?: OutcomeRecord,
-  instance?: [name: string, value: Remotable][]
+  instance?: [name: string, value: RpcRemote][]
 ) {
   const name =
     instance && instance.find(([_n, i]) => i === issue.contract)?.[0];
@@ -121,7 +121,7 @@ function ParamChangeIssueOutcome(
   );
 }
 
-function FilterIssueOutcome(
+function offerFilterOutcome(
   { issue }: OfferFilterSpec,
   outcome?: OutcomeRecord
 ) {
@@ -149,7 +149,7 @@ function FilterIssueOutcome(
 export function QuestionDetails(props: {
   details: IQuestionDetails;
   outcome?: OutcomeRecord;
-  instance?: [property: string, value: Remotable][];
+  instance?: [property: string, value: RpcRemote][];
 }) {
   const { details, outcome, instance } = props;
   console.debug('QuestionDetails', details);
@@ -165,9 +165,9 @@ export function QuestionDetails(props: {
       </small>
       <br />
       {details.electionType === 'offer_filter'
-        ? FilterIssueOutcome(details, outcome)
+        ? offerFilterOutcome(details, outcome)
         : details.electionType === 'param_change'
-        ? ParamChangeIssueOutcome(details, outcome, instance)
+        ? paramChangeOutcome(details, outcome, instance)
         : '???'}
     </>
   );
