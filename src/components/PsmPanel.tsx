@@ -6,6 +6,7 @@ import { selectedAnchorPetnameAtom } from 'store/swap';
 import AcceptInvitation from './AcceptInvitation';
 import ProposeParamChange from './ProposeParamChange';
 import ProposePauseOffers from './ProposePauseOffers';
+import { showTimestamp } from './questions.js';
 
 // TODO fetch list from RPC
 const anchors = ['AUSD', 'ELLIE'];
@@ -49,8 +50,8 @@ export default function PsmPanel(_props: Props) {
   return (
     <div>
       <p>
-        You may vote using the invitation makers from offer{' '}
-        <code>{previousOfferId}</code>
+        You may vote using the invitation makers from offer at{' '}
+        <code>{showTimestamp(previousOfferId)}</code>
       </p>
       <div className="w-full mt-2">
         <Listbox

@@ -3,8 +3,11 @@ import { RadioGroup } from '@headlessui/react';
 import { usePublishedDatum, WalletContext } from 'lib/wallet';
 import { useContext, useState } from 'react';
 
+export const showTimestamp = (ms: number) => new Date(ms).toISOString();
+
 export function QuestionDetails(props: { details: any }) {
   const { details } = props;
+
   return (
     <>
       <table>
