@@ -26,15 +26,9 @@ export default function VotePanel(_props: Props) {
       q,
       outcomeByHandle.get(q.questionHandle),
     ]);
-  return (
-    <div
-      className={clsx(
-        'rounded-xl bg-white p-3',
-        'ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2'
-      )}
-    >
-      {qStatus === 'received' && instanceStatus === 'received' ? (
-        questionsWithAnswers.map(([qData, aData], index) => (
+  const receivedItems =
+    qStatus === 'received' && instanceStatus === 'received'
+      ? questionsWithAnswers.map(([qData, aData], index) => (
           <li key={index}>
             <QuestionDetails
               details={qData}
@@ -48,8 +42,19 @@ export default function VotePanel(_props: Props) {
             />
           </li>
         ))
-      ) : (
+      : null;
+
+  return (
+    <div
+      className={clsx(
+        'rounded-xl bg-white p-3',
+        'ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2'
+      )}
+    >
+      {receivedItems === null ? (
         <em>stand by for question details...</em>
+      ) : (
+        <ul>{receivedItems}</ul>
       )}
     </div>
   );
