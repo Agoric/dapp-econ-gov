@@ -283,7 +283,6 @@ export const usePublishedHistory = (path: string) => {
   const [data, setData] = useState([]);
   const walletUtils = useContext(WalletContext);
 
-  // XXX cleanup? await next?
   useEffect(() => {
     const { follow } = walletUtils;
     const fetchData = async () => {
