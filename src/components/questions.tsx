@@ -271,25 +271,27 @@ function ChoosePosition(props: {
               }
             >
               {({ checked }) => (
-                <div className="flex h-46 w-20 items-center justify-center gap-x-2">
-                  <motion.div layout="position" className="text-sm">
+                <div className="flex h-46 w-20 items-center justify-start gap-x-2 px-2">
+                  <div className="text-sm">
                     <RadioGroup.Label
                       as="p"
                       className="font-medium text-gray-900"
                     >
                       {index === 0 ? 'YES' : 'NO'}
                     </RadioGroup.Label>
-                  </motion.div>
-                  {checked && (
-                    <motion.div
-                      className="shrink-0 text-gray-900"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: 'spring' }}
-                    >
-                      <FiCheck className="h-5 w-6" />
-                    </motion.div>
-                  )}
+                  </div>
+                  <div className="h-5 w-6">
+                    {checked && (
+                      <motion.div
+                        className="shrink-0 text-gray-900"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring' }}
+                      >
+                        <FiCheck className="h-full w-full" />
+                      </motion.div>
+                    )}
+                  </div>
                 </div>
               )}
             </RadioGroup.Option>
