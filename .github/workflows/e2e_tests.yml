@@ -64,6 +64,8 @@ jobs:
           GH_USERNAME: ${{ secrets.GH_USERNAME }}
           GOV1_PHRASE: ${{ secrets.GOV1_PHRASE }}
           GOV2_PHRASE: ${{ secrets.GOV2_PHRASE }}
+          OLLINET_GOV1_PHRASE: ${{ secrets.OLLINET_GOV1_PHRASE }}
+          OLLINET_GOV2_PHRASE: ${{ secrets.OLLINET_GOV2_PHRASE }}
           # cypress dashboard
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
