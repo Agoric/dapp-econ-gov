@@ -9,6 +9,14 @@ export const phrasesList = {
     gov1Phrase: Cypress.env('GOV1_PHRASE'),
     gov2Phrase: Cypress.env('GOV2_PHRASE'),
   },
+  ollinet: {
+    isLocal: false,
+    minutes: 3,
+    token: 'ToyUSD',
+    network: 'ollinet',
+    gov1Phrase: Cypress.env('OLLINET_GOV1_PHRASE'),
+    gov2Phrase: Cypress.env('OLLINET_GOV2_PHRASE'),
+  },
   local: {
     isLocal: true,
     minutes: 1,
