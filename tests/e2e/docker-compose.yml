@@ -42,7 +42,6 @@ services:
       - CYPRESS_OLLINET_GOV1_PHRASE=${OLLINET_GOV1_PHRASE}
       - CYPRESS_OLLINET_GOV2_PHRASE=${OLLINET_GOV2_PHRASE}
       - SECRET_WORDS="orbit bench unit task food shock brand bracket domain regular warfare company announce wheel grape trust sphere boy doctor half guard ritual three ecology"
-      - A3P_BRANCH=${A3P_BRANCH}
 
     depends_on:
       - display
@@ -109,7 +108,7 @@ services:
     profiles:
       - synpress
     container_name: agoric_chain
-    image: ghcr.io/agoric/agoric-3-proposals:${A3P_BRANCH}
+    image: ghcr.io/agoric/agoric-3-proposals:main
     logging:
       driver: none
     platform: linux/amd64
