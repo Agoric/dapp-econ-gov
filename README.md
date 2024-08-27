@@ -61,7 +61,7 @@ Then you need to run the tests using
 CYPRESS_AGORIC_NET=<network> yarn test:e2e
 ```
 
-where `network` can be: `local`, `emerynet`, or `devnet`
+where `network` can be: `local`, `emerynet`, `xnet` or `devnet`
 
 In case the tests are run on `local` network, you need to startup a local a3p chain using
 
