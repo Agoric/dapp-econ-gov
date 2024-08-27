@@ -33,10 +33,15 @@ describe('Make Proposal Tests', () => {
 
             cy.get('button[aria-label="Settings"]').click();
 
-            cy.get('#demo-simple-select').click();
-            cy.get(
-              `li[data-value="${networkPhrases.walletAppSelector}"]`,
-            ).click();
+            cy.contains('Mainnet').click();
+            cy.contains('Custom URL').should('be.visible').click();
+            cy.get('input[value="https://main.agoric.net/network-config"]')
+              .should('be.visible')
+              .click()
+              .then($input => {
+                cy.wrap($input).clear().type(networkPhrases.networkConfigURL);
+              });
+
             cy.contains('button', 'Connect').click();
           },
         );

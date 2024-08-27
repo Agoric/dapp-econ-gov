@@ -21,6 +21,7 @@ on:
           - local
           - emerynet
           - devnet
+          - xnet
       gov1_mnemonic:
         description: 'Mnemonic for gov1 wallet'
         required: false
@@ -48,7 +49,14 @@ jobs:
       id-token: 'write'
 
     env:
-      NETWORK: ${{ inputs.network || contains(github.event.pull_request.labels.*.name, 'emerynet') && 'emerynet' || contains(github.event.pull_request.labels.*.name, 'devnet') && 'devnet' || github.event_name == 'schedule' && 'emerynet' || 'local' }}
+      NETWORK: >-
+        ${{ inputs.network 
+          || contains(github.event.pull_request.labels.*.name, 'emerynet') && 'emerynet' 
+          || contains(github.event.pull_request.labels.*.name, 'devnet') && 'devnet' 
+          || contains(github.event.pull_request.labels.*.name, 'xnet') && 'xnet' 
+          || github.event_name == 'schedule' && 'emerynet' 
+          || 'local' 
+        }}
 
     steps:
       - name: Print network name
