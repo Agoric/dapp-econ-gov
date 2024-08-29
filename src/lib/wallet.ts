@@ -467,30 +467,51 @@ export const usePublishedDatum = (path: string) => {
   return { status, data };
 };
 
-export const usePublishedHistory = (path: string) => {
+export const usePublishedHistory = (path: string, paginationSize?: number) => {
   const [status, setStatus] = useState(LoadStatus.Idle);
   const [data, setData] = useState([]);
+  const [fetchNextPage, setFetchNextPage] = useState(() => () => {
+    /* noop */
+  });
   const walletUtils = useContext(WalletContext);
 
   useEffect(() => {
     const { follow } = rpcUtils;
     const fetchData = async () => {
-      console.debug('usePublishedDatum following', `:published.${path}`);
+      console.debug('usePublishedHistory following', `:published.${path}`);
       const follower = await follow(`:published.${path}`);
       const iterable: AsyncIterable<Record<string, unknown>> =
         await follower.getReverseIterable();
       setStatus(LoadStatus.Waiting);
+
+      // Creates a promise that resolves when `fetchNextPage` is invoked.
+      let fetchNextP = new Promise<void>(res =>
+        // Ref: https://stackoverflow.com/a/55621325
+        setFetchNextPage(() => () => res()),
+      );
+
       const items = [];
+      let curPageSize = 0;
       for await (const { value } of iterable) {
+        if (paginationSize && curPageSize >= paginationSize) {
+          setData(items);
+          // Wait until `fetchNextPage` is invoked to continue async iteration.
+          await fetchNextP;
+          fetchNextP = new Promise<void>(res =>
+            setFetchNextPage(() => () => res()),
+          );
+          curPageSize = 0;
+        }
         items.push(value);
+        curPageSize += 1;
       }
       setData(items);
       setStatus(LoadStatus.Received);
     };
     fetchData().catch(e => console.error('useEffect error', e));
-  }, [path, walletUtils]);
+  }, [paginationSize, path, walletUtils]);
 
-  return { status, data };
+  return { status, data, fetchNextPage };
 };
 
 type BrandDescriptor = {
