@@ -6,6 +6,7 @@ import type {
 import { usePublishedDatum, usePublishedHistory } from 'lib/wallet.js';
 import { QuestionDetails } from './questions.js';
 import { Triangle } from 'react-loader-spinner';
+import { useEffect, useRef } from 'react';
 
 interface Props {}
 
@@ -38,31 +39,54 @@ const cardVariant = {
   },
 };
 
-export default function VotePanel(_props: Props) {
+const paginationSize = 5;
+
+export default function HistoryPanel(_props: Props) {
   const { status: instanceStatus, data: instance } = usePublishedDatum(
     'agoricNames.instance',
   );
-  const { status: qStatus, data: questions } = usePublishedHistory(
+  const {
+    status: questionsStatus,
+    data: questions,
+    fetchNextPage: fetchQuestions,
+  } = usePublishedHistory(
     'committees.Economic_Committee.latestQuestion',
+    paginationSize,
   );
-  const { status: aStatus, data: outcomes } = usePublishedHistory(
+  const {
+    status: outcomesStatus,
+    data: outcomes,
+    fetchNextPage: fetchOutcomes,
+  } = usePublishedHistory(
     'committees.Economic_Committee.latestOutcome',
+    paginationSize,
   );
 
-  // Return early if not all data yet available
-  const dataLoaded = [instanceStatus, qStatus, aStatus].every(
+  const loaderRef = useRef(null);
+  useEffect(() => {
+    const observer = new IntersectionObserver(entries => {
+      const target = entries[0];
+      if (target.isIntersecting) {
+        fetchQuestions();
+        fetchOutcomes();
+      }
+    });
+
+    const { current } = loaderRef;
+    if (current) {
+      observer.observe(current);
+    }
+
+    return () => {
+      if (current) {
+        observer.unobserve(current);
+      }
+    };
+  }, [fetchOutcomes, fetchQuestions]);
+
+  const dataLoaded = [instanceStatus, questionsStatus, outcomesStatus].every(
     s => s === 'received',
   );
-  if (!dataLoaded) {
-    return (
-      <div className="text-gray-500 flex-col flex items-center mt-16 space-y-8">
-        <div className="w-fit">
-          <Triangle color="var(--color-primary)" />
-        </div>
-        <div>Stand by for question details...</div>
-      </div>
-    );
-  }
 
   const outcomeByHandle = new Map(
     outcomes.map((o: OutcomeRecord) => [o.question, o]),
@@ -72,23 +96,41 @@ export default function VotePanel(_props: Props) {
       q,
       outcomeByHandle.get(q.questionHandle),
     ]);
-  const receivedItems = questionsWithAnswers.map(([qData, aData], index) => (
-    <motion.div
-      key={index}
-      variants={cardVariant}
-      className="rounded-lg border-gray border shadow-md mb-4"
-    >
-      <QuestionDetails
-        details={qData}
-        outcome={aData?.question === qData.questionHandle ? aData : undefined}
-        instance={instance}
-      />
-    </motion.div>
-  ));
 
-  if (!receivedItems.length) {
-    return <div className="italic text-center mt-16">No questions yet.</div>;
-  }
+  const receivedItems =
+    dataLoaded && !questionsWithAnswers.length ? (
+      <div className="italic text-center mt-16">No questions yet.</div>
+    ) : (
+      instanceStatus === 'received' &&
+      questionsWithAnswers.map(([qData, aData], index) => (
+        <motion.div
+          key={index}
+          variants={cardVariant}
+          className="rounded-lg border-gray border shadow-md mb-4"
+        >
+          <QuestionDetails
+            details={qData}
+            outcome={aData}
+            instance={instance}
+          />
+        </motion.div>
+      ))
+    );
+
+  const loader = (
+    <div ref={loaderRef}>
+      {dataLoaded ? (
+        <></>
+      ) : (
+        <div className="text-gray-500 flex-col flex items-center mt-16 space-y-8">
+          <div className="w-fit">
+            <Triangle color="var(--color-primary)" />
+          </div>
+          <div>Stand by for question details...</div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <motion.div
@@ -98,6 +140,7 @@ export default function VotePanel(_props: Props) {
       className="pt-2"
     >
       {receivedItems}
+      {loader}
     </motion.div>
   );
 }
