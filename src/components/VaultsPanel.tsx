@@ -15,7 +15,7 @@ import CharterGuidance from './CharterGuidance';
 import DirectorParamChange from './DirectorParamChange';
 import PauseVaultDirectorOffers from './PauseVaultDirectorOffers';
 import ChangeOracles, { ChangeOraclesMode } from './ChangeOracles';
-import BurnIst from './BurnIst';
+// import BurnIst from './BurnIst';
 import PauseLiquidations from './PauseLiquidations';
 import AuctioneerParamChange from './AuctioneerParamChange';
 
