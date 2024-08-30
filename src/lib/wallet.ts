@@ -445,13 +445,18 @@ export const usePublishedKeys = (path: string) => {
   return { status, data };
 };
 
-export const usePublishedDatum = (path: string) => {
+export const usePublishedDatum = (path?: string) => {
   const [status, setStatus] = useState(LoadStatus.Idle);
   const [data, setData] = useState({} as any);
 
   useEffect(() => {
-    const { storageWatcher } = rpcUtils;
+    setData({});
+    if (path === undefined) {
+      setStatus(LoadStatus.Idle);
+      return;
+    }
 
+    const { storageWatcher } = rpcUtils;
     setStatus(LoadStatus.Waiting);
 
     return storageWatcher.watchLatest(

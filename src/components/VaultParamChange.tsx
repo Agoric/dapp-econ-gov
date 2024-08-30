@@ -42,11 +42,11 @@ export default function VaultParamChange(props: Props) {
   const [managerId, setManagerId] = useState(null);
 
   const { data, status } = usePublishedDatum(
-    `vaultFactory.managers.${managerId}.governance`,
+    managerId ? `vaultFactory.managers.${managerId}.governance` : undefined,
   );
 
   const { data: selectedManagerMetrics } = usePublishedDatum(
-    `vaultFactory.managers.${managerId}.metrics`,
+    managerId ? `vaultFactory.managers.${managerId}.metrics` : undefined,
   );
 
   const collateralBrand = selectedManagerMetrics?.totalCollateral?.brand;

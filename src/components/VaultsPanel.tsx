@@ -15,7 +15,6 @@ import CharterGuidance from './CharterGuidance';
 import DirectorParamChange from './DirectorParamChange';
 import PauseVaultDirectorOffers from './PauseVaultDirectorOffers';
 import ChangeOracles, { ChangeOraclesMode } from './ChangeOracles';
-import BurnIst from './BurnIst';
 import PauseLiquidations from './PauseLiquidations';
 import AuctioneerParamChange from './AuctioneerParamChange';
 
@@ -26,7 +25,6 @@ const ProposalTypes = {
   directorParamChange: 'Change Director Params',
   pauseOffers: 'Pause Vault Offers',
   pauseLiquidations: 'Pause Liquidations',
-  // manualBurn: 'Burn IST',
   auctioneerParamChange: 'Change Auctioneer Params',
 };
 
@@ -74,8 +72,6 @@ export default function VaultsPanel() {
             charterOfferId={charterOfferId}
           />
         );
-      // case ProposalTypes.manualBurn:
-      //  return <BurnIst charterOfferId={charterOfferId} />;
       case ProposalTypes.pauseLiquidations:
         return <PauseLiquidations charterOfferId={charterOfferId} />;
       case ProposalTypes.auctioneerParamChange:
