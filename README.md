@@ -63,13 +63,31 @@ CYPRESS_AGORIC_NET=<network> yarn test:e2e
 
 where `network` can be: `local`, `emerynet`, `xnet` or `devnet`
 
-In case the tests are run on `local` network, you need to startup a local a3p chain using
+In case the tests are run on `local` network, you need to startup a local `a3p` chain using
 
 ```
 docker compose -f tests/e2e/docker-compose.yml up -d agd
 ```
 
-Note: the tests use chrome browser by default so they require it to be installed
+Alternatively, you can create an `a3p` chain from a specific branch in your `agoric-sdk` repository. To do this, navigate to the `a3p-integration` directory in your `agoric-sdk` repository. Install all necessary dependencies and build the project with:
+
+```
+yarn && yarn build
+```
+
+Once the build is complete, locate the Docker image you just created by running:
+
+```
+docker images
+```
+
+Find the hash of your new image and start the container using the hash:
+
+```
+docker run -p 26657:26657 -p 1317:1317 -p 9090:9090 {hash}
+```
+
+**Note:** The tests use chrome browser by default so they require it to be installed
 
 ## On Github
 
