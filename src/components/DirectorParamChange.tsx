@@ -1,11 +1,13 @@
 import type { Amount } from '@agoric/ertp/src/types';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
-import { LoadStatus, usePublishedDatum, WalletContext } from 'lib/wallet';
-import { useContext, useState } from 'react';
+import { LoadStatus, usePublishedDatum } from 'lib/rpc';
+import { useState } from 'react';
 import { AmountInput, PercentageInput } from './inputs';
 import { SubmitInput } from './SubmitButton';
 import { displayParamName } from 'utils/displayFunctions';
+import { walletUtilsAtom } from 'store/app';
+import { useAtomValue } from 'jotai';
 
 export type ParameterValue =
   | {
@@ -32,7 +34,7 @@ interface Props {
 }
 
 export default function DirectorParamChange(props: Props) {
-  const walletUtils = useContext(WalletContext);
+  const walletUtils = useAtomValue(walletUtilsAtom);
 
   const { data, status } = usePublishedDatum(`vaultFactory.governance`) as {
     data: GovernedParams;
@@ -104,6 +106,11 @@ export default function DirectorParamChange(props: Props) {
   function handleSubmit(event) {
     event.preventDefault();
     console.debug({ event });
+    assert(
+      walletUtils,
+      'Missing walletUtils. Button should not be enabled before wallet connection.',
+    );
+
     const offer = walletUtils.makeVoteOnVaultDirectorParams(
       props.charterOfferId,
       paramPatch,

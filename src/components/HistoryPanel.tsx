@@ -1,9 +1,9 @@
-import { motion } from 'framer-motion';
 import type {
   OutcomeRecord,
   QuestionDetails as IQuestionDetails,
 } from '@agoric/governance/src/types';
-import { usePublishedDatum, usePublishedHistory } from 'lib/wallet.js';
+import { motion } from 'framer-motion';
+import { usePublishedDatum, usePublishedHistory } from 'lib/rpc.js';
 import { QuestionDetails } from './questions.js';
 import { Triangle } from 'react-loader-spinner';
 import { useEffect, useRef } from 'react';

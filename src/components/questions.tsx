@@ -1,10 +1,10 @@
-import { AssetKind } from '@agoric/ertp';
 import type { Amount } from '@agoric/ertp/src/types';
 import type {
   QuestionDetails as IQuestionDetails,
   OutcomeRecord,
   ChangeParamsPosition,
 } from '@agoric/governance/src/types';
+import { AssetKind } from '@agoric/ertp';
 import { stringifyValue } from '@agoric/ui-components';
 import { bigintStringify } from '@agoric/wallet-backend/src/bigintStringify.js';
 import { Ratio } from '@agoric/zoe/src/contractSupport';
@@ -12,11 +12,9 @@ import { RadioGroup } from '@headlessui/react';
 import { formatISO9075, formatRelative } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useAtomValue } from 'jotai';
-import { WalletContext } from 'lib/wallet';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { FiCheck, FiInfo } from 'react-icons/fi';
-import { displayFunctionsAtom } from 'store/app';
-
+import { displayFunctionsAtom, walletUtilsAtom } from 'store/app';
 import clsx from 'clsx';
 import {
   capitalize,
@@ -308,12 +306,16 @@ export function VoteOnQuestion(props: {
   instance?: [property: string, value: RpcRemote][];
   details: IQuestionDetails;
 }) {
-  const walletUtils = useContext(WalletContext);
+  const walletUtils = useAtomValue(walletUtilsAtom);
 
   const { details } = props;
 
   function voteFor(position) {
     console.log('voting for position', position);
+    assert(
+      walletUtils,
+      'Missing walletUtils. Button should not be enabled before wallet connection.',
+    );
     const offer = walletUtils.makeOfferToVote(
       props.ecOfferId,
       [position],

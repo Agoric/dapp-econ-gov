@@ -2,18 +2,16 @@ import { Fragment } from 'react';
 import clsx from 'clsx';
 import { Menu, Transition } from '@headlessui/react';
 import { motion } from 'framer-motion';
-import {
-  inferInvitationStatus,
-  charterInvitationSpec,
-  usePublishedDatum,
-  WalletContext,
-} from 'lib/wallet';
-import { useContext, useState } from 'react';
+import { usePublishedDatum } from 'lib/rpc';
+import { inferInvitationStatus, charterInvitationSpec } from 'lib/wallet';
+import { useState } from 'react';
 import { HiArrowNarrowDown } from 'react-icons/hi';
 import { FiChevronDown } from 'react-icons/fi';
 import ProposeParamChange from './ProposeParamChange';
 import ProposePauseOffers from './ProposePauseOffers';
 import CharterGuidance from './CharterGuidance';
+import { useAtomValue } from 'jotai';
+import { walletUtilsAtom } from 'store/app';
 
 // TODO fetch list from RPC
 const anchors = [
@@ -45,12 +43,15 @@ const ProposalTypes = {
 export default function PsmPanel() {
   const [anchorName, setAnchorName] = useState(anchors[0]);
   const [proposalType, setProposalType] = useState(ProposalTypes.paramChange);
-  const walletUtils = useContext(WalletContext);
-  const { data: walletCurrent } = usePublishedDatum(
-    `wallet.${walletUtils.getWalletAddress()}.current`,
+  const walletUtils = useAtomValue(walletUtilsAtom);
+  const { data: walletCurrent, status } = usePublishedDatum(
+    walletUtils
+      ? `wallet.${walletUtils.getWalletAddress()}.current`
+      : undefined,
   );
 
   const invitationStatus = inferInvitationStatus(
+    status,
     walletCurrent,
     charterInvitationSpec.description,
   );

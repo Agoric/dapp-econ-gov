@@ -1,16 +1,26 @@
+import type { Id as ToastId } from 'react-toastify';
 import NoticeBanner from 'components/NoticeBanner';
 import { Menu, Transition } from '@headlessui/react';
-import { Fragment, MouseEventHandler, useContext } from 'react';
+import { Fragment, MouseEventHandler, useEffect } from 'react';
 import { FiChevronDown, FiExternalLink } from 'react-icons/fi';
 import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
 import { INTER_LOGO } from 'assets/assets';
-
 import GovernanceTools from 'components/GovernanceTools';
-import { WalletContext } from 'lib/wallet';
-import 'styles/globals.css';
 import { supportedNetworks } from 'config';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import {
+  connectWalletIndicatorAtom,
+  rpcUtilsAtom,
+  walletToastIdAtom,
+  walletUtilsAtom,
+} from 'store/app';
+import { agoricNet, makeRpcUtils, RpcUtils } from 'lib/rpc';
+import { makeWalletUtils } from 'lib/wallet';
+import { Oval } from 'react-loader-spinner';
+import { dismissToast, notifyError } from 'utils/displayFunctions';
+
+import 'react-toastify/dist/ReactToastify.css';
+import 'styles/globals.css';
 
 const Item = ({
   label,
@@ -37,7 +47,7 @@ const Item = ({
   );
 };
 
-const NetPicker = (props: { currentNet: string }) => {
+const NetPicker = () => {
   const items = supportedNetworks.map(config => (
     <Item
       key={config}
@@ -52,8 +62,8 @@ const NetPicker = (props: { currentNet: string }) => {
 
   return (
     <Menu as="div" className="mb-2 mr-2 relative inline-block text-left">
-      <Menu.Button className="shadow-md inline-flex w-full justify-center rounded-md hover:text-purple-300 bg-blue-900/10 hover:bg-slate-100 px-4 py-2 text-md font-medium text-primary focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
-        {props.currentNet}
+      <Menu.Button className="btn-header">
+        {agoricNet}
         <FiChevronDown className="ml-2 -mr-1 h-6 w-5" aria-hidden="true" />
       </Menu.Button>
       <Transition
@@ -73,12 +83,125 @@ const NetPicker = (props: { currentNet: string }) => {
   );
 };
 
-interface Props {}
+const WalletButton = () => {
+  const [walletUtils, setWalletUtils] = useAtom(walletUtilsAtom);
+  const rpcUtils = useAtomValue(rpcUtilsAtom);
+  const [connectWalletIndicator, setConnectWalletIndicator] = useAtom(
+    connectWalletIndicatorAtom,
+  );
+  const [walletToastId, setWalletToastId] = useAtom(walletToastIdAtom);
 
-const App = (_props: Props) => {
-  const walletUtils = useContext(WalletContext);
+  const explorerHref = walletUtils?.getAddressExplorerHref();
+  const address = walletUtils?.getWalletAddress();
 
-  const address = walletUtils.getWalletAddress();
+  const connectWallet = async () => {
+    if (connectWalletIndicator) return;
+
+    if (walletToastId) {
+      dismissToast(walletToastId);
+      setWalletToastId(undefined);
+    }
+
+    if (!rpcUtils) {
+      setWalletToastId(
+        notifyError(
+          new Error('Error connecting to wallet, cannot connect to RPC.'),
+        ) as ToastId,
+      );
+      return;
+    }
+
+    setConnectWalletIndicator(true);
+
+    try {
+      const walletUtils = await makeWalletUtils(rpcUtils);
+      setWalletUtils(walletUtils);
+    } catch (e) {
+      console.error('Error connecting to wallet:', e);
+      setWalletToastId(
+        notifyError(
+          new Error('Error connecting to wallet: ' + e.message),
+        ) as ToastId,
+      );
+    }
+    setConnectWalletIndicator(false);
+  };
+
+  if (address) {
+    return (
+      <a
+        target="block-explorer"
+        href={explorerHref}
+        title="Block Explorer"
+        className="btn-header no-underline"
+      >
+        {address}
+        <FiExternalLink className="my-1 ml-2 -mr-1 h-4 w-5" />
+      </a>
+    );
+  }
+
+  return (
+    <button className="btn-header flex flex-row gap-2" onClick={connectWallet}>
+      <div>Connect Wallet</div>
+      {connectWalletIndicator && (
+        <Oval height={18} width={18} color="var(--color-primary)" />
+      )}
+    </button>
+  );
+};
+
+const App = () => {
+  const setWalletUtils = useSetAtom(walletUtilsAtom);
+  const setRpcUtils = useSetAtom(rpcUtilsAtom);
+  const setConnectWalletIndicatorAtom = useSetAtom(connectWalletIndicatorAtom);
+  const setWalletToastId = useSetAtom(walletToastIdAtom);
+
+  useEffect(() => {
+    let isCancelled = false;
+    const loadWalletUtils = async () => {
+      setConnectWalletIndicatorAtom(true);
+
+      let rpcUtils: RpcUtils;
+      try {
+        rpcUtils = await makeRpcUtils();
+        if (isCancelled) return;
+        setRpcUtils(rpcUtils);
+      } catch (e) {
+        console.error('Error connecting to RPC:', e);
+        notifyError(
+          new Error('Error connecting to RPC, see console for details.'),
+        );
+        setConnectWalletIndicatorAtom(false);
+        return;
+      }
+
+      try {
+        const walletUtils = await makeWalletUtils(rpcUtils);
+        if (isCancelled) return;
+        setWalletUtils(walletUtils);
+      } catch (e) {
+        console.error('Error connecting to wallet:', e);
+        setWalletToastId(
+          notifyError(
+            new Error('Error connecting to wallet: ' + e.message),
+          ) as ToastId,
+        );
+      }
+      setConnectWalletIndicatorAtom(false);
+    };
+
+    void loadWalletUtils();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    setConnectWalletIndicatorAtom,
+    setRpcUtils,
+    setWalletToastId,
+    setWalletUtils,
+  ]);
 
   return (
     <>
@@ -98,20 +221,12 @@ const App = (_props: Props) => {
             width="200"
           />
           <div>
-            <NetPicker currentNet={walletUtils.agoricNet} />
-            <a
-              target="block-explorer"
-              href={walletUtils.getAddressExplorerHref()}
-              title="Block Explorer"
-              className="shadow-md no-underline inline-flex justify-center rounded-md bg-blue-900/10 px-4 py-2 text-md font-medium text-primary hover:bg-slate-100 hover:text-purple-300 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-            >
-              {address}
-              <FiExternalLink className="my-1 ml-2 -mr-1 h-4 w-5" />
-            </a>
+            <NetPicker />
+            <WalletButton />
           </div>
         </div>
         <div className="min-w-screen container mx-auto flex justify-center sm:mt-8">
-          <GovernanceTools walletAddress={address} />
+          <GovernanceTools />
         </div>
       </div>
     </>

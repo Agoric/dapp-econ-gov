@@ -8,8 +8,7 @@ import { Position } from '@agoric/governance/src/types.js';
 import { Ratio } from '@agoric/zoe/src/contractSupport';
 import { SigningStargateClient as AmbientClient } from '@cosmjs/stargate';
 import { ERef } from '@endo/eventual-send';
-import { ChainInfo, Keplr } from '@keplr-wallet/types';
-import React, { useContext, useEffect, useState } from 'react';
+import { ChainInfo, Window as WindowWithKeplr } from '@keplr-wallet/types';
 import {
   notifyError,
   notifySigning,
@@ -17,11 +16,8 @@ import {
 } from 'utils/displayFunctions.js';
 import { suggestChain } from './chainInfo.js';
 import { makeInteractiveSigner } from './keyManagement.js';
-import { marshal, RpcUtils } from './rpc';
-import { makeRpcUtils } from './rpc.js';
-import { accountInfoUrl, networkConfigUrl } from 'config.js';
-import { AgoricChainStoragePathKind } from '@agoric/rpc/index.js';
-import { fetchNetworkConfig } from 'utils/networkConfig.js';
+import { LoadStatus, marshal, RpcUtils } from './rpc';
+import { accountInfoUrl } from 'config.js';
 
 export type RelativeTime = { timerBrand: Brand; relValue: bigint };
 
@@ -33,8 +29,14 @@ export const charterInvitationSpec = {
 const absoluteDeadline = (relativeDeadlineMin: number) =>
   BigInt(relativeDeadlineMin * 60 + Math.round(Date.now() / 1000));
 
-export const makeWalletUtils = async (rpcUtils: RpcUtils, keplr: Keplr) => {
-  const { agoricNames } = rpcUtils;
+export const makeWalletUtils = async (rpcUtils: RpcUtils) => {
+  const { keplr } = window as WindowWithKeplr;
+  if (!keplr) {
+    window.alert('requires Keplr extension');
+    assert.fail('missing keplr');
+  }
+
+  const { agoricNames, agoricNet } = rpcUtils;
 
   const lookupAgoricInstance = name => {
     const instance = agoricNames.instance[name];
@@ -43,8 +45,7 @@ export const makeWalletUtils = async (rpcUtils: RpcUtils, keplr: Keplr) => {
   };
 
   const makeChainKit = async () => {
-    const netConfigURL = networkConfigUrl(agoricNet);
-    const networkConfig = await fetchNetworkConfig(netConfigURL);
+    const { netConfigURL, networkConfig } = rpcUtils;
 
     const chainInfo: ChainInfo = await suggestChain(
       netConfigURL,
@@ -76,9 +77,7 @@ export const makeWalletUtils = async (rpcUtils: RpcUtils, keplr: Keplr) => {
   };
 
   return {
-    agoricNet,
     chainKit,
-    rpcUtils,
     getAddressExplorerHref() {
       return accountInfoUrl(agoricNet, walletKey.bech32Address);
     },
@@ -380,7 +379,7 @@ export const makeWalletUtils = async (rpcUtils: RpcUtils, keplr: Keplr) => {
           console.log({ sequence: stuff });
         } catch (notOnChain) {
           console.error('getSequence', notOnChain);
-          alert(notOnChain.message);
+          notifyError(notOnChain);
         }
       };
     },
@@ -400,124 +399,12 @@ export const makeWalletUtils = async (rpcUtils: RpcUtils, keplr: Keplr) => {
         .then(tx => {
           notifySuccess(toastId, agoricNet, tx);
         })
-        .catch(err => notifyError(toastId, err));
+        .catch(err => notifyError(err, toastId));
     },
   };
 };
 
-const usp = new URLSearchParams(window.location.search);
-const agoricNet = usp.get('agoricNet') || 'main';
-console.log('RPC server:', agoricNet);
-export const rpcUtils = await makeRpcUtils({ agoricNet });
-
-const { keplr } = window as import('@keplr-wallet/types').Window;
-if (!keplr) {
-  window.alert('requires Keplr extension');
-  assert.fail('missing keplr');
-}
-
-export const walletUtils = await makeWalletUtils(rpcUtils, keplr);
-
-export const WalletContext = React.createContext(walletUtils);
-
-export enum LoadStatus {
-  Idle = 'idle',
-  Waiting = 'waiting',
-  Received = 'received',
-}
-
-export const usePublishedKeys = (path: string) => {
-  const [status, setStatus] = useState(LoadStatus.Idle);
-  const [data, setData] = useState([]);
-  const { vstorage } = rpcUtils;
-
-  useEffect(() => {
-    const fetchKeys = async () => {
-      console.debug('usePublishedKeys reading', `published.${path}`);
-      setStatus(LoadStatus.Waiting);
-      const keys = await vstorage.keys(`published.${path}`);
-      setData(keys);
-      setStatus(LoadStatus.Received);
-    };
-    fetchKeys().catch(console.error);
-  }, [path, vstorage]);
-
-  return { status, data };
-};
-
-export const usePublishedDatum = (path?: string) => {
-  const [status, setStatus] = useState(LoadStatus.Idle);
-  const [data, setData] = useState({} as any);
-
-  useEffect(() => {
-    setData({});
-    if (path === undefined) {
-      setStatus(LoadStatus.Idle);
-      return;
-    }
-
-    const { storageWatcher } = rpcUtils;
-    setStatus(LoadStatus.Waiting);
-
-    return storageWatcher.watchLatest(
-      [AgoricChainStoragePathKind.Data, `published.${path}`],
-      value => {
-        setData(value);
-        setStatus(LoadStatus.Received);
-      },
-      e => console.error('useEffect error', path, e),
-    );
-  }, [path]);
-
-  return { status, data };
-};
-
-export const usePublishedHistory = (path: string, paginationSize?: number) => {
-  const [status, setStatus] = useState(LoadStatus.Idle);
-  const [data, setData] = useState([]);
-  const [fetchNextPage, setFetchNextPage] = useState(() => () => {
-    /* noop */
-  });
-  const walletUtils = useContext(WalletContext);
-
-  useEffect(() => {
-    const { follow } = rpcUtils;
-    const fetchData = async () => {
-      console.debug('usePublishedHistory following', `:published.${path}`);
-      const follower = await follow(`:published.${path}`);
-      const iterable: AsyncIterable<Record<string, unknown>> =
-        await follower.getReverseIterable();
-      setStatus(LoadStatus.Waiting);
-
-      // Creates a promise that resolves when `fetchNextPage` is invoked.
-      let fetchNextP = new Promise<void>(res =>
-        // Ref: https://stackoverflow.com/a/55621325
-        setFetchNextPage(() => () => res()),
-      );
-
-      const items = [];
-      let curPageSize = 0;
-      for await (const { value } of iterable) {
-        if (paginationSize && curPageSize >= paginationSize) {
-          setData(items);
-          // Wait until `fetchNextPage` is invoked to continue async iteration.
-          await fetchNextP;
-          fetchNextP = new Promise<void>(res =>
-            setFetchNextPage(() => () => res()),
-          );
-          curPageSize = 0;
-        }
-        items.push(value);
-        curPageSize += 1;
-      }
-      setData(items);
-      setStatus(LoadStatus.Received);
-    };
-    fetchData().catch(e => console.error('useEffect error', e));
-  }, [paginationSize, path, walletUtils]);
-
-  return { status, data, fetchNextPage };
-};
+export type WalletUtils = Awaited<ReturnType<typeof makeWalletUtils>>;
 
 type BrandDescriptor = {
   brand: Brand;
@@ -539,9 +426,14 @@ const coerceEntries = mapOrEntries => {
 };
 
 export const inferInvitationStatus = (
+  status: LoadStatus,
   current: CurrentWalletRecord | undefined,
   descriptionSubstr: string,
 ) => {
+  if (status === LoadStatus.Idle) {
+    return { status: 'idle' };
+  }
+
   if (!current?.offerToUsedInvitation) {
     return { status: 'nodata' };
   }
