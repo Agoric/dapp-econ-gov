@@ -7,4 +7,7 @@
   .input-primary {
     @apply bg-white text-xl rounded-sm p-3 focus:outline-none focus:ring-2 focus:ring-secondary;
   }
+  .btn-header {
+    @apply shadow-md no-underline inline-flex justify-center rounded-md bg-blue-900/10 px-4 py-2 font-medium text-primary hover:bg-slate-100 hover:text-purple-300 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75;
+  }
 }

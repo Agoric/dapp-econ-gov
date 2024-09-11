@@ -1,9 +1,11 @@
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
-import { LoadStatus, usePublishedDatum, WalletContext } from 'lib/wallet';
-import { useContext, useState } from 'react';
+import { LoadStatus, usePublishedDatum } from 'lib/wallet';
+import { useState } from 'react';
 import { SubmitInput } from './SubmitButton';
 import type { RelativeTime } from 'lib/wallet';
+import { useAtomValue } from 'jotai';
+import { walletUtilsAtom } from 'store/app';
 
 export type ParameterValue =
   | {
@@ -22,7 +24,7 @@ interface Props {
 }
 
 export default function AuctioneerParamChange(props: Props) {
-  const walletUtils = useContext(WalletContext);
+  const walletUtils = useAtomValue(walletUtilsAtom);
 
   const { data, status } = usePublishedDatum(`auction.governance`) as {
     data: GovernedParams;
@@ -100,12 +102,12 @@ export default function AuctioneerParamChange(props: Props) {
   function handleSubmit(event) {
     event.preventDefault();
     console.debug({ event });
-    const offer = walletUtils.makeVoteOnVaultAuctioneerParams(
+    const offer = walletUtils?.makeVoteOnVaultAuctioneerParams(
       props.charterOfferId,
       paramPatch,
       minutesUntilClose,
     );
-    void walletUtils.sendOffer(offer);
+    void walletUtils?.sendOffer(offer);
   }
 
   const content =

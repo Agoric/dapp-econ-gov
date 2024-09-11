@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { WalletContext } from 'lib/wallet';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { SubmitInput } from './SubmitButton';
+import { walletUtilsAtom } from 'store/app';
+import { useAtomValue } from 'jotai';
 
 interface Props {
   anchorName: string;
@@ -9,7 +10,7 @@ interface Props {
 }
 
 export default function ProposePauseOffers(props: Props) {
-  const walletUtils = useContext(WalletContext);
+  const walletUtils = useAtomValue(walletUtilsAtom);
   // read the initial state from rpc?
   const [checked, setChecked] = useState({
     wantMinted: false,
@@ -33,13 +34,13 @@ export default function ProposePauseOffers(props: Props) {
     const toPause = Object.entries(checked)
       .filter(([_, check]) => check)
       .map(([name]) => name);
-    const offer = walletUtils.makeVoteOnPausePSMOffers(
+    const offer = walletUtils?.makeVoteOnPausePSMOffers(
       props.psmCharterOfferId,
       props.anchorName,
       toPause,
       minutesUntilClose,
     );
-    void walletUtils.sendOffer(offer);
+    void walletUtils?.sendOffer(offer);
   }
 
   const optionMessage = option => {

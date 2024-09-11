@@ -3,16 +3,13 @@ import { Fragment } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 import { Menu, Transition } from '@headlessui/react';
 import { motion } from 'framer-motion';
-import {
-  LoadStatus,
-  usePublishedDatum,
-  usePublishedKeys,
-  WalletContext,
-} from 'lib/wallet';
-import { useContext, useState } from 'react';
+import { LoadStatus, usePublishedDatum, usePublishedKeys } from 'lib/wallet';
+import { useState } from 'react';
 import { AmountInput, PercentageInput } from './inputs';
 import { SubmitInput } from './SubmitButton';
 import { displayBrandLabel, displayParamName } from 'utils/displayFunctions';
+import { useAtomValue } from 'jotai';
+import { walletUtilsAtom } from 'store/app';
 
 interface Props {
   charterOfferId: string;
@@ -33,7 +30,7 @@ export type ParameterValue =
     };
 
 export default function VaultParamChange(props: Props) {
-  const walletUtils = useContext(WalletContext);
+  const walletUtils = useAtomValue(walletUtilsAtom);
   const { data: vaultKeys, status: vaultKeysStatus } = usePublishedKeys(
     'vaultFactory.managers',
   );
@@ -100,13 +97,13 @@ export default function VaultParamChange(props: Props) {
   function handleSubmit(event) {
     event.preventDefault();
     console.debug({ event });
-    const offer = walletUtils.makeVoteOnVaultManagerParams(
+    const offer = walletUtils?.makeVoteOnVaultManagerParams(
       props.charterOfferId,
       collateralBrand,
       paramPatch,
       minutesUntilClose,
     );
-    void walletUtils.sendOffer(offer);
+    void walletUtils?.sendOffer(offer);
   }
 
   const content =

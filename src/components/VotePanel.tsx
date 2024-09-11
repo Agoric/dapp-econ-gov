@@ -1,17 +1,17 @@
 import type { QuestionDetails } from '@agoric/governance/src/types';
+import type { RpcRemote } from '../govTypes';
 import { motion } from 'framer-motion';
 import {
   inferInvitationStatus,
   usePublishedDatum,
   usePublishedHistory,
-  WalletContext,
 } from 'lib/wallet';
-import { useContext } from 'react';
 import { capitalize } from 'utils/displayFunctions';
 import { timestampPassed } from 'utils/helpers';
-import type { RpcRemote } from '../govTypes';
 import AcceptInvitation from './AcceptInvitation';
 import { OfferId, VoteOnQuestion } from './questions';
+import { useAtomValue } from 'jotai';
+import { walletUtilsAtom } from 'store/app';
 
 interface Props {}
 
@@ -21,6 +21,10 @@ function Eligibility({
   acceptedIn,
 }: ReturnType<typeof inferInvitationStatus>) {
   switch (status) {
+    case 'idle':
+      return (
+        <p>Waiting for wallet connection. Try &quot;Connect Wallet&quot;.</p>
+      );
     case 'nodata':
       return <p>Loading…</p>;
     case 'missing':
@@ -86,15 +90,17 @@ function VoteOnQuestions(props: {
 }
 
 export default function VotePanel(_props: Props) {
-  const walletUtils = useContext(WalletContext);
-  const { data } = usePublishedDatum(
-    `wallet.${walletUtils.getWalletAddress()}.current`,
+  const walletUtils = useAtomValue(walletUtilsAtom);
+  const { data, status } = usePublishedDatum(
+    walletUtils
+      ? `wallet.${walletUtils.getWalletAddress()}.current`
+      : undefined,
   );
   const { status: instanceStatus, data: instance } = usePublishedDatum(
     'agoricNames.instance',
   );
 
-  const invitationStatus = inferInvitationStatus(data, 'Voter');
+  const invitationStatus = inferInvitationStatus(status, data, 'Voter');
   const previousOfferId = invitationStatus.acceptedIn;
 
   return (

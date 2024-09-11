@@ -1,9 +1,11 @@
 import type { Amount } from '@agoric/ertp/src/types';
 import { motion } from 'framer-motion';
-import { LoadStatus, usePublishedDatum, WalletContext } from 'lib/wallet';
-import { useContext, useState } from 'react';
+import { LoadStatus, usePublishedDatum } from 'lib/wallet';
+import { useState } from 'react';
 import { AmountInput, PercentageInput } from './inputs';
 import { SubmitInput } from './SubmitButton';
+import { useAtomValue } from 'jotai';
+import { walletUtilsAtom } from 'store/app';
 
 interface Props {
   anchorName: string;
@@ -25,7 +27,7 @@ export type ParameterValue =
     };
 
 export default function ProposeParamChange(props: Props) {
-  const walletUtils = useContext(WalletContext);
+  const walletUtils = useAtomValue(walletUtilsAtom);
   const { data, status } = usePublishedDatum(
     `psm.IST.${props.anchorName}.governance`,
   );
@@ -76,13 +78,13 @@ export default function ProposeParamChange(props: Props) {
   function handleSubmit(event) {
     event.preventDefault();
     console.debug({ event });
-    const offer = walletUtils.makeVoteOnPSMParams(
+    const offer = walletUtils?.makeVoteOnPSMParams(
       props.psmCharterOfferId,
       props.anchorName,
       paramPatch,
       minutesUntilClose,
     );
-    void walletUtils.sendOffer(offer);
+    void walletUtils?.sendOffer(offer);
   }
 
   let content = (

@@ -59,15 +59,21 @@ export const displayBrandLabel = (brand?: Brand) =>
 
 export const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
 
-export const notifyError = (toastId: ToastId, err: Error) => {
+export const notifyError = (err: Error, toastId?: ToastId) => {
   console.log(err);
-  toast.update(toastId, {
-    render: err.message,
-    type: toast.TYPE.ERROR,
-    isLoading: false,
-    closeButton: true,
-  });
+  if (toastId) {
+    return toast.update(toastId, {
+      render: err.message,
+      type: toast.TYPE.ERROR,
+      isLoading: false,
+      closeButton: true,
+    });
+  } else {
+    return toast.error(err.message, { isLoading: false, closeButton: true });
+  }
 };
+
+export const dismissToast = (toastId: ToastId) => toast.dismiss(toastId);
 
 const getLogoForBrandPetname = (brandPetname: string) => {
   switch (brandPetname) {

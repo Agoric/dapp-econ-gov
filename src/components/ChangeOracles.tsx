@@ -1,18 +1,13 @@
 import { Menu, Transition } from '@headlessui/react';
 import clsx from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LoadStatus, usePublishedDatum, WalletContext } from 'lib/wallet';
-import {
-  Fragment,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { LoadStatus, usePublishedDatum } from 'lib/wallet';
+import { Fragment, useCallback, useMemo, useRef, useState } from 'react';
 import { FiChevronDown, FiPlus, FiX } from 'react-icons/fi';
 import { fromBech32 } from '@cosmjs/encoding';
 import { SubmitButton } from './SubmitButton';
+import { useAtomValue } from 'jotai';
+import { walletUtilsAtom } from 'store/app';
 
 interface ListItemProps {
   address: string;
@@ -57,7 +52,7 @@ interface Props {
 }
 
 export default function ChangeOracles({ charterOfferId, mode }: Props) {
-  const walletUtils = useContext(WalletContext);
+  const walletUtils = useAtomValue(walletUtilsAtom);
   const addressInput = useRef(null);
 
   const { data: instances, status } = usePublishedDatum('agoricNames.instance');
@@ -108,8 +103,8 @@ export default function ChangeOracles({ charterOfferId, mode }: Props) {
     console.debug({ event, addresses, minutesUntilClose });
 
     const offerFns = {
-      [ChangeOraclesMode.Add]: walletUtils.makeVoteOnAddOracles,
-      [ChangeOraclesMode.Remove]: walletUtils.makeVoteOnRemoveOracles,
+      [ChangeOraclesMode.Add]: walletUtils?.makeVoteOnAddOracles,
+      [ChangeOraclesMode.Remove]: walletUtils?.makeVoteOnRemoveOracles,
     };
 
     const offer = offerFns[mode](
@@ -118,7 +113,7 @@ export default function ChangeOracles({ charterOfferId, mode }: Props) {
       addresses,
       minutesUntilClose,
     );
-    void walletUtils.sendOffer(offer);
+    void walletUtils?.sendOffer(offer);
   }
 
   const addressesList = (

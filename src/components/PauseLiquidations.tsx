@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { WalletContext } from 'lib/wallet';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { SubmitInput } from './SubmitButton';
+import { useAtomValue } from 'jotai';
+import { walletUtilsAtom } from 'store/app';
 
 interface Props {
   charterOfferId: string;
@@ -13,7 +14,7 @@ const invitationDescriptions = {
 };
 
 export default function PauseLiquidations(props: Props) {
-  const walletUtils = useContext(WalletContext);
+  const walletUtils = useAtomValue(walletUtilsAtom);
   // XXX read the initial state from rpc?
   const [checked, setChecked] = useState({
     [invitationDescriptions.newBid]: false,
@@ -34,12 +35,12 @@ export default function PauseLiquidations(props: Props) {
   function handleSubmit(event) {
     event.preventDefault();
     const toPause = Object.keys(checked).filter(name => checked[name]);
-    const offer = walletUtils.makeVoteOnPauseLiquidationOffers(
+    const offer = walletUtils?.makeVoteOnPauseLiquidationOffers(
       props.charterOfferId,
       toPause,
       minutesUntilClose,
     );
-    void walletUtils.sendOffer(offer);
+    void walletUtils?.sendOffer(offer);
   }
 
   const optionMessage = option => {

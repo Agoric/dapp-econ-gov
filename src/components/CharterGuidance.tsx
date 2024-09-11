@@ -9,6 +9,10 @@ export default function CharterGuidance({
   acceptedIn,
 }: ReturnType<typeof inferInvitationStatus>) {
   switch (status) {
+    case 'idle':
+      return (
+        <p>Waiting for wallet connection. Try &quot;Connect Wallet&quot;.</p>
+      );
     case 'nodata':
       return <p>Loading…</p>;
     case 'missing':

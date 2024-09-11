@@ -8,8 +8,8 @@ import { Position } from '@agoric/governance/src/types.js';
 import { Ratio } from '@agoric/zoe/src/contractSupport';
 import { SigningStargateClient as AmbientClient } from '@cosmjs/stargate';
 import { ERef } from '@endo/eventual-send';
-import { ChainInfo, Keplr } from '@keplr-wallet/types';
-import React, { useContext, useEffect, useState } from 'react';
+import { ChainInfo, Window as WindowWithKeplr } from '@keplr-wallet/types';
+import { useEffect, useState } from 'react';
 import {
   notifyError,
   notifySigning,
@@ -18,10 +18,10 @@ import {
 import { suggestChain } from './chainInfo.js';
 import { makeInteractiveSigner } from './keyManagement.js';
 import { marshal, RpcUtils } from './rpc';
-import { makeRpcUtils } from './rpc.js';
-import { accountInfoUrl, networkConfigUrl } from 'config.js';
+import { accountInfoUrl } from 'config.js';
 import { AgoricChainStoragePathKind } from '@agoric/rpc/index.js';
-import { fetchNetworkConfig } from 'utils/networkConfig.js';
+import { rpcUtilsAtom } from 'store/app.js';
+import { useAtomValue } from 'jotai';
 
 export type RelativeTime = { timerBrand: Brand; relValue: bigint };
 
@@ -33,8 +33,14 @@ export const charterInvitationSpec = {
 const absoluteDeadline = (relativeDeadlineMin: number) =>
   BigInt(relativeDeadlineMin * 60 + Math.round(Date.now() / 1000));
 
-export const makeWalletUtils = async (rpcUtils: RpcUtils, keplr: Keplr) => {
-  const { agoricNames } = rpcUtils;
+export const makeWalletUtils = async (rpcUtils: RpcUtils) => {
+  const { keplr } = window as WindowWithKeplr;
+  if (!keplr) {
+    window.alert('requires Keplr extension');
+    assert.fail('missing keplr');
+  }
+
+  const { agoricNames, agoricNet } = rpcUtils;
 
   const lookupAgoricInstance = name => {
     const instance = agoricNames.instance[name];
@@ -43,8 +49,7 @@ export const makeWalletUtils = async (rpcUtils: RpcUtils, keplr: Keplr) => {
   };
 
   const makeChainKit = async () => {
-    const netConfigURL = networkConfigUrl(agoricNet);
-    const networkConfig = await fetchNetworkConfig(netConfigURL);
+    const { netConfigURL, networkConfig } = rpcUtils;
 
     const chainInfo: ChainInfo = await suggestChain(
       netConfigURL,
@@ -76,9 +81,7 @@ export const makeWalletUtils = async (rpcUtils: RpcUtils, keplr: Keplr) => {
   };
 
   return {
-    agoricNet,
     chainKit,
-    rpcUtils,
     getAddressExplorerHref() {
       return accountInfoUrl(agoricNet, walletKey.bech32Address);
     },
@@ -400,25 +403,12 @@ export const makeWalletUtils = async (rpcUtils: RpcUtils, keplr: Keplr) => {
         .then(tx => {
           notifySuccess(toastId, agoricNet, tx);
         })
-        .catch(err => notifyError(toastId, err));
+        .catch(err => notifyError(err, toastId));
     },
   };
 };
 
-const usp = new URLSearchParams(window.location.search);
-const agoricNet = usp.get('agoricNet') || 'main';
-console.log('RPC server:', agoricNet);
-export const rpcUtils = await makeRpcUtils({ agoricNet });
-
-const { keplr } = window as import('@keplr-wallet/types').Window;
-if (!keplr) {
-  window.alert('requires Keplr extension');
-  assert.fail('missing keplr');
-}
-
-export const walletUtils = await makeWalletUtils(rpcUtils, keplr);
-
-export const WalletContext = React.createContext(walletUtils);
+export type WalletUtils = Awaited<ReturnType<typeof makeWalletUtils>>;
 
 export enum LoadStatus {
   Idle = 'idle',
@@ -429,18 +419,23 @@ export enum LoadStatus {
 export const usePublishedKeys = (path: string) => {
   const [status, setStatus] = useState(LoadStatus.Idle);
   const [data, setData] = useState([]);
-  const { vstorage } = rpcUtils;
+  const rpcUtils = useAtomValue(rpcUtilsAtom);
 
   useEffect(() => {
+    if (!rpcUtils) {
+      setStatus(LoadStatus.Idle);
+      return;
+    }
+
     const fetchKeys = async () => {
       console.debug('usePublishedKeys reading', `published.${path}`);
       setStatus(LoadStatus.Waiting);
-      const keys = await vstorage.keys(`published.${path}`);
+      const keys = await rpcUtils.vstorage.keys(`published.${path}`);
       setData(keys);
       setStatus(LoadStatus.Received);
     };
     fetchKeys().catch(console.error);
-  }, [path, vstorage]);
+  }, [path, rpcUtils]);
 
   return { status, data };
 };
@@ -448,10 +443,11 @@ export const usePublishedKeys = (path: string) => {
 export const usePublishedDatum = (path?: string) => {
   const [status, setStatus] = useState(LoadStatus.Idle);
   const [data, setData] = useState({} as any);
+  const rpcUtils = useAtomValue(rpcUtilsAtom);
 
   useEffect(() => {
     setData({});
-    if (path === undefined) {
+    if (path === undefined || !rpcUtils) {
       setStatus(LoadStatus.Idle);
       return;
     }
@@ -467,7 +463,7 @@ export const usePublishedDatum = (path?: string) => {
       },
       e => console.error('useEffect error', path, e),
     );
-  }, [path]);
+  }, [path, rpcUtils]);
 
   return { status, data };
 };
@@ -478,10 +474,15 @@ export const usePublishedHistory = (path: string, paginationSize?: number) => {
   const [fetchNextPage, setFetchNextPage] = useState(() => () => {
     /* noop */
   });
-  const walletUtils = useContext(WalletContext);
+  const rpcUtils = useAtomValue(rpcUtilsAtom);
 
   useEffect(() => {
+    if (!rpcUtils) {
+      setStatus(LoadStatus.Idle);
+      return;
+    }
     const { follow } = rpcUtils;
+
     const fetchData = async () => {
       console.debug('usePublishedHistory following', `:published.${path}`);
       const follower = await follow(`:published.${path}`);
@@ -514,7 +515,7 @@ export const usePublishedHistory = (path: string, paginationSize?: number) => {
       setStatus(LoadStatus.Received);
     };
     fetchData().catch(e => console.error('useEffect error', e));
-  }, [paginationSize, path, walletUtils]);
+  }, [paginationSize, path, rpcUtils]);
 
   return { status, data, fetchNextPage };
 };
@@ -539,9 +540,14 @@ const coerceEntries = mapOrEntries => {
 };
 
 export const inferInvitationStatus = (
+  status: LoadStatus,
   current: CurrentWalletRecord | undefined,
   descriptionSubstr: string,
 ) => {
+  if (status === LoadStatus.Idle) {
+    return { status: 'idle' };
+  }
+
   if (!current?.offerToUsedInvitation) {
     return { status: 'nodata' };
   }

@@ -1,12 +1,9 @@
 import { motion } from 'framer-motion';
-import {
-  LoadStatus,
-  usePublishedDatum,
-  usePublishedKeys,
-  WalletContext,
-} from 'lib/wallet';
-import { useContext, useEffect, useState } from 'react';
+import { LoadStatus, usePublishedDatum, usePublishedKeys } from 'lib/wallet';
+import { useEffect, useState } from 'react';
 import { SubmitInput } from './SubmitButton';
+import { useAtomValue } from 'jotai';
+import { walletUtilsAtom } from 'store/app';
 
 interface ManagerGroupProps {
   managerId: string;
@@ -76,7 +73,7 @@ interface Props {
 }
 
 export default function PauseVaultDirectorOffers(props: Props) {
-  const walletUtils = useContext(WalletContext);
+  const walletUtils = useAtomValue(walletUtilsAtom);
   const { data: managerIds, status: vaultKeysStatus } = usePublishedKeys(
     'vaultFactory.managers',
   );
@@ -93,12 +90,12 @@ export default function PauseVaultDirectorOffers(props: Props) {
     const toPause = Object.entries(checked)
       .filter(([_, check]) => check)
       .map(([name]) => name);
-    const offer = walletUtils.makeVoteOnPauseVaultOffers(
+    const offer = walletUtils?.makeVoteOnPauseVaultOffers(
       props.charterOfferId,
       toPause,
       minutesUntilClose,
     );
-    void walletUtils.sendOffer(offer);
+    void walletUtils?.sendOffer(offer);
   }
 
   const managers =

@@ -6,9 +6,8 @@ import {
   inferInvitationStatus,
   charterInvitationSpec,
   usePublishedDatum,
-  WalletContext,
 } from 'lib/wallet';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 import VaultParamChange from './VaultParamChange';
 import CharterGuidance from './CharterGuidance';
@@ -17,6 +16,8 @@ import PauseVaultDirectorOffers from './PauseVaultDirectorOffers';
 import ChangeOracles, { ChangeOraclesMode } from './ChangeOracles';
 import PauseLiquidations from './PauseLiquidations';
 import AuctioneerParamChange from './AuctioneerParamChange';
+import { useAtomValue } from 'jotai';
+import { walletUtilsAtom } from 'store/app';
 
 const ProposalTypes = {
   addOracles: 'Add Oracle Operators',
@@ -37,14 +38,17 @@ export default function VaultsPanel() {
   const [proposalType, setProposalType] = useState(
     ProposalTypes.managerParamChange,
   );
-  const walletUtils = useContext(WalletContext);
+  const walletUtils = useAtomValue(walletUtilsAtom);
   const filterProposals = networkProposalFilter(walletUtils);
 
-  const { data: walletCurrent } = usePublishedDatum(
-    `wallet.${walletUtils.getWalletAddress()}.current`,
+  const { data: walletCurrent, status } = usePublishedDatum(
+    walletUtils
+      ? `wallet.${walletUtils.getWalletAddress()}.current`
+      : undefined,
   );
 
   const charterInvitationStatus = inferInvitationStatus(
+    status,
     walletCurrent,
     charterInvitationSpec.description,
   );

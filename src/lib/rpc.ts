@@ -2,6 +2,7 @@
 // @ts-check
 /// <reference types="ses"/>
 
+import type { MinimalNetworkConfig } from 'utils/networkConfig';
 import {
   ValueFollower,
   iterateLatest,
@@ -19,20 +20,12 @@ import { sample } from 'lodash-es';
 
 export const marshal = makeImportContext().fromBoard;
 
-type MinimalNetworkConfig = { rpcAddrs: string[]; chainName: string };
-
 const fromAgoricNet = (str: string): Promise<MinimalNetworkConfig> => {
   const [netName, chainName] = str.split(',');
   if (chainName) {
     return Promise.resolve({ chainName, rpcAddrs: [rpcUrl(netName)] });
   }
   return fetch(networkConfigUrl(netName)).then(res => res.json());
-};
-
-// XXX hard coded default to local
-let networkConfig: MinimalNetworkConfig = {
-  rpcAddrs: ['http://localhost:26657'],
-  chainName: 'agoric',
 };
 
 const makeAgoricNames = async (
@@ -76,14 +69,15 @@ const fetchVstorageKeys = async (
   );
 };
 
-export const makeRpcUtils = async ({ agoricNet }) => {
-  networkConfig =
-    agoricNet === 'local'
-      ? { rpcAddrs: ['http://localhost:26657'], chainName: 'agoric' }
-      : await fromAgoricNet(agoricNet);
+const usp = new URLSearchParams(window.location.search);
+export const agoricNet = usp.get('agoricNet') || 'main';
+console.log('RPC server:', agoricNet);
+
+export const makeRpcUtils = async () => {
+  const netConfigURL = networkConfigUrl(agoricNet);
+  const networkConfig = await fromAgoricNet(agoricNet);
 
   const { rpcAddrs, chainName } = networkConfig;
-
   const leader = makeLeader(archivingAlternative(chainName, rpcAddrs[0]), {});
 
   // XXX memoize on path
@@ -108,6 +102,9 @@ export const makeRpcUtils = async ({ agoricNet }) => {
     leader,
     vstorage,
     storageWatcher,
+    agoricNet,
+    netConfigURL,
+    networkConfig,
   };
 };
 export type RpcUtils = Awaited<ReturnType<typeof makeRpcUtils>>;
