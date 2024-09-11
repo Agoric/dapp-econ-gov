@@ -1,7 +1,7 @@
 import { Menu, Transition } from '@headlessui/react';
 import clsx from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LoadStatus, usePublishedDatum } from 'lib/wallet';
+import { LoadStatus, usePublishedDatum } from 'lib/rpc';
 import { Fragment, useCallback, useMemo, useRef, useState } from 'react';
 import { FiChevronDown, FiPlus, FiX } from 'react-icons/fi';
 import { fromBech32 } from '@cosmjs/encoding';

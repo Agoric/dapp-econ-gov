@@ -11,8 +11,15 @@ import {
 } from '@agoric/casting';
 import { makeImportContext } from './makeImportContext';
 import { archivingAlternative, networkConfigUrl, rpcUrl } from 'config';
-import { makeAgoricChainStorageWatcher } from '@agoric/rpc';
+import {
+  AgoricChainStoragePathKind,
+  makeAgoricChainStorageWatcher,
+} from '@agoric/rpc';
 import { sample } from 'lodash-es';
+import { notifyError } from 'utils/displayFunctions';
+import { useEffect, useState } from 'react';
+import { useAtomValue } from 'jotai';
+import { rpcUtilsAtom } from 'store/app';
 
 /**
  * @typedef {{boardId: string, iface: string}} RpcRemote
@@ -31,6 +38,16 @@ const fromAgoricNet = (str: string): Promise<MinimalNetworkConfig> => {
 const makeAgoricNames = async (
   follow: (path: string) => Promise<ValueFollower<unknown>>,
 ) => {
+  const timeoutDurationMS = 10_000;
+  const timeout = setTimeout(
+    () =>
+      notifyError(
+        new Error(
+          'Connecting to RPC taking longer than expected. Check console for details.',
+        ),
+      ),
+    timeoutDurationMS,
+  );
   const entries = await Promise.all(
     ['brand', 'instance'].map(async kind => {
       const f = follow(`:published.agoricNames.${kind}`);
@@ -39,6 +56,7 @@ const makeAgoricNames = async (
       }
     }),
   );
+  clearTimeout(timeout);
   return Object.fromEntries(entries);
 };
 
@@ -108,3 +126,125 @@ export const makeRpcUtils = async () => {
   };
 };
 export type RpcUtils = Awaited<ReturnType<typeof makeRpcUtils>>;
+
+export enum LoadStatus {
+  Idle = 'idle',
+  Waiting = 'waiting',
+  Received = 'received',
+}
+
+export const usePublishedKeys = (path: string) => {
+  const [status, setStatus] = useState(LoadStatus.Idle);
+  const [data, setData] = useState([]);
+  const rpcUtils = useAtomValue(rpcUtilsAtom);
+
+  useEffect(() => {
+    if (!rpcUtils) {
+      setStatus(LoadStatus.Idle);
+      return;
+    }
+
+    const fetchKeys = async () => {
+      console.debug('usePublishedKeys reading', `published.${path}`);
+      setStatus(LoadStatus.Waiting);
+      const keys = await rpcUtils.vstorage.keys(`published.${path}`);
+      setData(keys);
+      setStatus(LoadStatus.Received);
+    };
+    fetchKeys().catch(e => notifyError(e));
+  }, [path, rpcUtils]);
+
+  return { status, data };
+};
+
+export const usePublishedDatum = (path?: string) => {
+  const [status, setStatus] = useState(LoadStatus.Idle);
+  const [data, setData] = useState({} as any);
+  const rpcUtils = useAtomValue(rpcUtilsAtom);
+
+  useEffect(() => {
+    setData({});
+    if (path === undefined || !rpcUtils) {
+      setStatus(LoadStatus.Idle);
+      return;
+    }
+
+    const { storageWatcher } = rpcUtils;
+    setStatus(LoadStatus.Waiting);
+
+    let didError = false;
+    return storageWatcher.watchLatest(
+      [AgoricChainStoragePathKind.Data, `published.${path}`],
+      value => {
+        setData(value);
+        setStatus(LoadStatus.Received);
+      },
+      e => {
+        if (didError) {
+          console.error(e);
+          return;
+        }
+        didError = true;
+        notifyError(
+          new Error(
+            'Error reading vstorage data for path "' + path + '": ' + e,
+          ),
+        );
+      },
+    );
+  }, [path, rpcUtils]);
+
+  return { status, data };
+};
+
+export const usePublishedHistory = (path: string, paginationSize?: number) => {
+  const [status, setStatus] = useState(LoadStatus.Idle);
+  const [data, setData] = useState([]);
+  const [fetchNextPage, setFetchNextPage] = useState(() => () => {
+    /* noop */
+  });
+  const rpcUtils = useAtomValue(rpcUtilsAtom);
+
+  useEffect(() => {
+    if (!rpcUtils) {
+      setStatus(LoadStatus.Idle);
+      return;
+    }
+    const { follow } = rpcUtils;
+
+    const fetchData = async () => {
+      console.debug('usePublishedHistory following', `:published.${path}`);
+      const follower = await follow(`:published.${path}`);
+      const iterable: AsyncIterable<Record<string, unknown>> =
+        await follower.getReverseIterable();
+      setStatus(LoadStatus.Waiting);
+
+      // Creates a promise that resolves when `fetchNextPage` is invoked.
+      let fetchNextP = new Promise<void>(res =>
+        // Ref: https://stackoverflow.com/a/55621325
+        setFetchNextPage(() => () => res()),
+      );
+
+      const items = [];
+      let curPageSize = 0;
+      for await (const { value } of iterable) {
+        if (paginationSize && curPageSize >= paginationSize) {
+          setData(items);
+          // Wait until `fetchNextPage` is invoked to continue async iteration.
+          await fetchNextP;
+          fetchNextP = new Promise<void>(res =>
+            setFetchNextPage(() => () => res()),
+          );
+          curPageSize = 0;
+        }
+        items.push(value);
+        curPageSize += 1;
+      }
+      setData(items);
+      setStatus(LoadStatus.Received);
+    };
+    fetchData().catch(e => notifyError(e));
+  }, [paginationSize, path, rpcUtils]);
+
+  return { status, data, fetchNextPage };
+};

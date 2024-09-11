@@ -97,11 +97,22 @@ const WalletButton = () => {
   const connectWallet = async () => {
     if (connectWalletIndicator) return;
 
-    setConnectWalletIndicator(true);
     if (walletToastId) {
       dismissToast(walletToastId);
       setWalletToastId(undefined);
     }
+
+    if (!rpcUtils) {
+      setWalletToastId(
+        notifyError(
+          new Error('Error connecting to wallet, cannot connect to RPC.'),
+        ) as ToastId,
+      );
+      return;
+    }
+
+    setConnectWalletIndicator(true);
+
     try {
       const walletUtils = await makeWalletUtils(rpcUtils);
       setWalletUtils(walletUtils);
@@ -176,7 +187,7 @@ const App = () => {
       setConnectWalletIndicatorAtom(false);
     };
 
-    loadWalletUtils().catch(e => console.error('Error connecting to chain', e));
+    void loadWalletUtils();
 
     return () => {
       isCancelled = true;

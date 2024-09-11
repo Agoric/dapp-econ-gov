@@ -3,7 +3,7 @@ import { Fragment } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 import { Menu, Transition } from '@headlessui/react';
 import { motion } from 'framer-motion';
-import { LoadStatus, usePublishedDatum, usePublishedKeys } from 'lib/wallet';
+import { LoadStatus, usePublishedDatum, usePublishedKeys } from 'lib/rpc';
 import { useState } from 'react';
 import { AmountInput, PercentageInput } from './inputs';
 import { SubmitInput } from './SubmitButton';

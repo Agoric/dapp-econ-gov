@@ -1,9 +1,9 @@
+import type { RelativeTime } from 'lib/wallet';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
-import { LoadStatus, usePublishedDatum } from 'lib/wallet';
+import { LoadStatus, usePublishedDatum } from 'lib/rpc';
 import { useState } from 'react';
 import { SubmitInput } from './SubmitButton';
-import type { RelativeTime } from 'lib/wallet';
 import { useAtomValue } from 'jotai';
 import { walletUtilsAtom } from 'store/app';
 

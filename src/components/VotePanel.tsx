@@ -1,11 +1,8 @@
 import type { QuestionDetails } from '@agoric/governance/src/types';
 import type { RpcRemote } from '../govTypes';
 import { motion } from 'framer-motion';
-import {
-  inferInvitationStatus,
-  usePublishedDatum,
-  usePublishedHistory,
-} from 'lib/wallet';
+import { usePublishedDatum, usePublishedHistory } from 'lib/rpc';
+import { inferInvitationStatus } from 'lib/wallet';
 import { capitalize } from 'utils/displayFunctions';
 import { timestampPassed } from 'utils/helpers';
 import AcceptInvitation from './AcceptInvitation';

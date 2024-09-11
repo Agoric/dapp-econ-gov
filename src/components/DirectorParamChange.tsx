@@ -1,7 +1,7 @@
 import type { Amount } from '@agoric/ertp/src/types';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
-import { LoadStatus, usePublishedDatum } from 'lib/wallet';
+import { LoadStatus, usePublishedDatum } from 'lib/rpc';
 import { useState } from 'react';
 import { AmountInput, PercentageInput } from './inputs';
 import { SubmitInput } from './SubmitButton';

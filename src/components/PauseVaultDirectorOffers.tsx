@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { LoadStatus, usePublishedDatum, usePublishedKeys } from 'lib/wallet';
+import { LoadStatus, usePublishedDatum, usePublishedKeys } from 'lib/rpc';
 import { useEffect, useState } from 'react';
 import { SubmitInput } from './SubmitButton';
 import { useAtomValue } from 'jotai';

@@ -9,7 +9,6 @@ import { Ratio } from '@agoric/zoe/src/contractSupport';
 import { SigningStargateClient as AmbientClient } from '@cosmjs/stargate';
 import { ERef } from '@endo/eventual-send';
 import { ChainInfo, Window as WindowWithKeplr } from '@keplr-wallet/types';
-import { useEffect, useState } from 'react';
 import {
   notifyError,
   notifySigning,
@@ -17,11 +16,8 @@ import {
 } from 'utils/displayFunctions.js';
 import { suggestChain } from './chainInfo.js';
 import { makeInteractiveSigner } from './keyManagement.js';
-import { marshal, RpcUtils } from './rpc';
+import { LoadStatus, marshal, RpcUtils } from './rpc';
 import { accountInfoUrl } from 'config.js';
-import { AgoricChainStoragePathKind } from '@agoric/rpc/index.js';
-import { rpcUtilsAtom } from 'store/app.js';
-import { useAtomValue } from 'jotai';
 
 export type RelativeTime = { timerBrand: Brand; relValue: bigint };
 
@@ -383,7 +379,7 @@ export const makeWalletUtils = async (rpcUtils: RpcUtils) => {
           console.log({ sequence: stuff });
         } catch (notOnChain) {
           console.error('getSequence', notOnChain);
-          alert(notOnChain.message);
+          notifyError(notOnChain);
         }
       };
     },
@@ -409,116 +405,6 @@ export const makeWalletUtils = async (rpcUtils: RpcUtils) => {
 };
 
 export type WalletUtils = Awaited<ReturnType<typeof makeWalletUtils>>;
-
-export enum LoadStatus {
-  Idle = 'idle',
-  Waiting = 'waiting',
-  Received = 'received',
-}
-
-export const usePublishedKeys = (path: string) => {
-  const [status, setStatus] = useState(LoadStatus.Idle);
-  const [data, setData] = useState([]);
-  const rpcUtils = useAtomValue(rpcUtilsAtom);
-
-  useEffect(() => {
-    if (!rpcUtils) {
-      setStatus(LoadStatus.Idle);
-      return;
-    }
-
-    const fetchKeys = async () => {
-      console.debug('usePublishedKeys reading', `published.${path}`);
-      setStatus(LoadStatus.Waiting);
-      const keys = await rpcUtils.vstorage.keys(`published.${path}`);
-      setData(keys);
-      setStatus(LoadStatus.Received);
-    };
-    fetchKeys().catch(console.error);
-  }, [path, rpcUtils]);
-
-  return { status, data };
-};
-
-export const usePublishedDatum = (path?: string) => {
-  const [status, setStatus] = useState(LoadStatus.Idle);
-  const [data, setData] = useState({} as any);
-  const rpcUtils = useAtomValue(rpcUtilsAtom);
-
-  useEffect(() => {
-    setData({});
-    if (path === undefined || !rpcUtils) {
-      setStatus(LoadStatus.Idle);
-      return;
-    }
-
-    const { storageWatcher } = rpcUtils;
-    setStatus(LoadStatus.Waiting);
-
-    return storageWatcher.watchLatest(
-      [AgoricChainStoragePathKind.Data, `published.${path}`],
-      value => {
-        setData(value);
-        setStatus(LoadStatus.Received);
-      },
-      e => console.error('useEffect error', path, e),
-    );
-  }, [path, rpcUtils]);
-
-  return { status, data };
-};
-
-export const usePublishedHistory = (path: string, paginationSize?: number) => {
-  const [status, setStatus] = useState(LoadStatus.Idle);
-  const [data, setData] = useState([]);
-  const [fetchNextPage, setFetchNextPage] = useState(() => () => {
-    /* noop */
-  });
-  const rpcUtils = useAtomValue(rpcUtilsAtom);
-
-  useEffect(() => {
-    if (!rpcUtils) {
-      setStatus(LoadStatus.Idle);
-      return;
-    }
-    const { follow } = rpcUtils;
-
-    const fetchData = async () => {
-      console.debug('usePublishedHistory following', `:published.${path}`);
-      const follower = await follow(`:published.${path}`);
-      const iterable: AsyncIterable<Record<string, unknown>> =
-        await follower.getReverseIterable();
-      setStatus(LoadStatus.Waiting);
-
-      // Creates a promise that resolves when `fetchNextPage` is invoked.
-      let fetchNextP = new Promise<void>(res =>
-        // Ref: https://stackoverflow.com/a/55621325
-        setFetchNextPage(() => () => res()),
-      );
-
-      const items = [];
-      let curPageSize = 0;
-      for await (const { value } of iterable) {
-        if (paginationSize && curPageSize >= paginationSize) {
-          setData(items);
-          // Wait until `fetchNextPage` is invoked to continue async iteration.
-          await fetchNextP;
-          fetchNextP = new Promise<void>(res =>
-            setFetchNextPage(() => () => res()),
-          );
-          curPageSize = 0;
-        }
-        items.push(value);
-        curPageSize += 1;
-      }
-      setData(items);
-      setStatus(LoadStatus.Received);
-    };
-    fetchData().catch(e => console.error('useEffect error', e));
-  }, [paginationSize, path, rpcUtils]);
-
-  return { status, data, fetchNextPage };
-};
 
 type BrandDescriptor = {
   brand: Brand;

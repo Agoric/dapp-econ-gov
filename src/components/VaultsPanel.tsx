@@ -2,11 +2,8 @@ import { Fragment } from 'react';
 import clsx from 'clsx';
 import { Menu, Transition } from '@headlessui/react';
 import { motion } from 'framer-motion';
-import {
-  inferInvitationStatus,
-  charterInvitationSpec,
-  usePublishedDatum,
-} from 'lib/wallet';
+import { usePublishedDatum } from 'lib/rpc';
+import { inferInvitationStatus, charterInvitationSpec } from 'lib/wallet';
 import { useState } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 import VaultParamChange from './VaultParamChange';

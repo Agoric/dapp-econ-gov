@@ -3,7 +3,7 @@ import type {
   QuestionDetails as IQuestionDetails,
 } from '@agoric/governance/src/types';
 import { motion } from 'framer-motion';
-import { usePublishedDatum, usePublishedHistory } from 'lib/wallet.js';
+import { usePublishedDatum, usePublishedHistory } from 'lib/rpc.js';
 import { QuestionDetails } from './questions.js';
 import { Triangle } from 'react-loader-spinner';
 import { useEffect, useRef } from 'react';
