@@ -78,13 +78,17 @@ export default function ProposeParamChange(props: Props) {
   function handleSubmit(event) {
     event.preventDefault();
     console.debug({ event });
-    const offer = walletUtils?.makeVoteOnPSMParams(
+    assert(
+      walletUtils,
+      'Missing walletUtils. Button should not be enabled before wallet connection.',
+    );
+    const offer = walletUtils.makeVoteOnPSMParams(
       props.psmCharterOfferId,
       props.anchorName,
       paramPatch,
       minutesUntilClose,
     );
-    void walletUtils?.sendOffer(offer);
+    void walletUtils.sendOffer(offer);
   }
 
   let content = (

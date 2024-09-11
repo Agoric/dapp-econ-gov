@@ -3,7 +3,7 @@ import { Fragment } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 import { Menu, Transition } from '@headlessui/react';
 import { motion } from 'framer-motion';
-import { LoadStatus, usePublishedDatum, usePublishedKeys } from 'lib/rpc';
+import { LoadStatus, usePublishedDatum, useVstorageChildKeys } from 'lib/rpc';
 import { useState } from 'react';
 import { AmountInput, PercentageInput } from './inputs';
 import { SubmitInput } from './SubmitButton';
@@ -31,8 +31,8 @@ export type ParameterValue =
 
 export default function VaultParamChange(props: Props) {
   const walletUtils = useAtomValue(walletUtilsAtom);
-  const { data: vaultKeys, status: vaultKeysStatus } = usePublishedKeys(
-    'vaultFactory.managers',
+  const { data: vaultKeys, status: vaultKeysStatus } = useVstorageChildKeys(
+    'published.vaultFactory.managers',
   );
 
   const managerIds = vaultKeys.filter(key => key.startsWith('manager'));
@@ -97,13 +97,17 @@ export default function VaultParamChange(props: Props) {
   function handleSubmit(event) {
     event.preventDefault();
     console.debug({ event });
-    const offer = walletUtils?.makeVoteOnVaultManagerParams(
+    assert(
+      walletUtils,
+      'Missing walletUtils. Button should not be enabled before wallet connection.',
+    );
+    const offer = walletUtils.makeVoteOnVaultManagerParams(
       props.charterOfferId,
       collateralBrand,
       paramPatch,
       minutesUntilClose,
     );
-    void walletUtils?.sendOffer(offer);
+    void walletUtils.sendOffer(offer);
   }
 
   const content =

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { LoadStatus, usePublishedDatum, usePublishedKeys } from 'lib/rpc';
+import { LoadStatus, usePublishedDatum, useVstorageChildKeys } from 'lib/rpc';
 import { useEffect, useState } from 'react';
 import { SubmitInput } from './SubmitButton';
 import { useAtomValue } from 'jotai';
@@ -74,8 +74,8 @@ interface Props {
 
 export default function PauseVaultDirectorOffers(props: Props) {
   const walletUtils = useAtomValue(walletUtilsAtom);
-  const { data: managerIds, status: vaultKeysStatus } = usePublishedKeys(
-    'vaultFactory.managers',
+  const { data: managerIds, status: vaultKeysStatus } = useVstorageChildKeys(
+    'published.vaultFactory.managers',
   );
 
   const [checked, setChecked] = useState({});
@@ -87,15 +87,20 @@ export default function PauseVaultDirectorOffers(props: Props) {
   function handleSubmit(event) {
     event.preventDefault();
     console.debug({ event, checked, minutesUntilClose });
+    assert(
+      walletUtils,
+      'Missing walletUtils. Button should not be enabled before wallet connection.',
+    );
+
     const toPause = Object.entries(checked)
       .filter(([_, check]) => check)
       .map(([name]) => name);
-    const offer = walletUtils?.makeVoteOnPauseVaultOffers(
+    const offer = walletUtils.makeVoteOnPauseVaultOffers(
       props.charterOfferId,
       toPause,
       minutesUntilClose,
     );
-    void walletUtils?.sendOffer(offer);
+    void walletUtils.sendOffer(offer);
   }
 
   const managers =

@@ -102,12 +102,16 @@ export default function AuctioneerParamChange(props: Props) {
   function handleSubmit(event) {
     event.preventDefault();
     console.debug({ event });
-    const offer = walletUtils?.makeVoteOnVaultAuctioneerParams(
+    assert(
+      walletUtils,
+      'Missing walletUtils. Button should not be enabled before wallet connection.',
+    );
+    const offer = walletUtils.makeVoteOnVaultAuctioneerParams(
       props.charterOfferId,
       paramPatch,
       minutesUntilClose,
     );
-    void walletUtils?.sendOffer(offer);
+    void walletUtils.sendOffer(offer);
   }
 
   const content =

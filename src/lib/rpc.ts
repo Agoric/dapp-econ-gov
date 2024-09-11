@@ -35,10 +35,11 @@ const fromAgoricNet = (str: string): Promise<MinimalNetworkConfig> => {
   return fetch(networkConfigUrl(netName)).then(res => res.json());
 };
 
+const timeoutDurationMS = 10_000;
+
 const makeAgoricNames = async (
   follow: (path: string) => Promise<ValueFollower<unknown>>,
 ) => {
-  const timeoutDurationMS = 10_000;
   const timeout = setTimeout(
     () =>
       notifyError(
@@ -133,7 +134,12 @@ export enum LoadStatus {
   Received = 'received',
 }
 
-export const usePublishedKeys = (path: string) => {
+/**
+ * Fetches the list of children keys under a given vstorage node.
+ *
+ * @param {string} path The path of the vstorage node to query
+ */
+export const useVstorageChildKeys = (path: string) => {
   const [status, setStatus] = useState(LoadStatus.Idle);
   const [data, setData] = useState([]);
   const rpcUtils = useAtomValue(rpcUtilsAtom);
@@ -145,9 +151,9 @@ export const usePublishedKeys = (path: string) => {
     }
 
     const fetchKeys = async () => {
-      console.debug('usePublishedKeys reading', `published.${path}`);
+      console.debug('useVstorageChildKeys reading', path);
       setStatus(LoadStatus.Waiting);
-      const keys = await rpcUtils.vstorage.keys(`published.${path}`);
+      const keys = await rpcUtils.vstorage.keys(path);
       setData(keys);
       setStatus(LoadStatus.Received);
     };

@@ -101,10 +101,14 @@ export default function ChangeOracles({ charterOfferId, mode }: Props) {
   function handleSubmit(event) {
     event.preventDefault();
     console.debug({ event, addresses, minutesUntilClose });
+    assert(
+      walletUtils,
+      'Missing walletUtils. Button should not be enabled before wallet connection.',
+    );
 
     const offerFns = {
-      [ChangeOraclesMode.Add]: walletUtils?.makeVoteOnAddOracles,
-      [ChangeOraclesMode.Remove]: walletUtils?.makeVoteOnRemoveOracles,
+      [ChangeOraclesMode.Add]: walletUtils.makeVoteOnAddOracles,
+      [ChangeOraclesMode.Remove]: walletUtils.makeVoteOnRemoveOracles,
     };
 
     const offer = offerFns[mode](
@@ -113,7 +117,7 @@ export default function ChangeOracles({ charterOfferId, mode }: Props) {
       addresses,
       minutesUntilClose,
     );
-    void walletUtils?.sendOffer(offer);
+    void walletUtils.sendOffer(offer);
   }
 
   const addressesList = (

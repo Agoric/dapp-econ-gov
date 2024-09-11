@@ -31,16 +31,20 @@ export default function ProposePauseOffers(props: Props) {
   function handleSubmit(event) {
     event.preventDefault();
     console.debug({ event, checked, minutesUntilClose });
+    assert(
+      walletUtils,
+      'Missing walletUtils. Button should not be enabled before wallet connection.',
+    );
     const toPause = Object.entries(checked)
       .filter(([_, check]) => check)
       .map(([name]) => name);
-    const offer = walletUtils?.makeVoteOnPausePSMOffers(
+    const offer = walletUtils.makeVoteOnPausePSMOffers(
       props.psmCharterOfferId,
       props.anchorName,
       toPause,
       minutesUntilClose,
     );
-    void walletUtils?.sendOffer(offer);
+    void walletUtils.sendOffer(offer);
   }
 
   const optionMessage = option => {

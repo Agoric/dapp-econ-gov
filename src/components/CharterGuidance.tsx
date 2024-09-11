@@ -11,7 +11,9 @@ export default function CharterGuidance({
   switch (status) {
     case 'idle':
       return (
-        <p>Waiting for wallet connection. Try &quot;Connect Wallet&quot;.</p>
+        <p>
+          Waiting for wallet connection. Try <b>Connect Wallet</b>.
+        </p>
       );
     case 'nodata':
       return <p>Loading…</p>;

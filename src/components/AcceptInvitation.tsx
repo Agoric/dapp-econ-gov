@@ -14,11 +14,15 @@ export default function AcceptInvitation(props: Props) {
       className="btn-primary rounded text-sm py-1 px-2 m-2"
       title={props.sourceContract}
       onClick={() => {
-        const offer = walletUtils?.makeOfferToAcceptInvitation(
+        assert(
+          walletUtils,
+          'Accept Invitation button should not be visible before wallet connection.',
+        );
+        const offer = walletUtils.makeOfferToAcceptInvitation(
           props.sourceContract,
           props.description,
         );
-        void walletUtils?.sendOffer(offer);
+        void walletUtils.sendOffer(offer);
       }}
     >
       Accept Invitation

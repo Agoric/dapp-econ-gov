@@ -34,13 +34,17 @@ export default function PauseLiquidations(props: Props) {
 
   function handleSubmit(event) {
     event.preventDefault();
+    assert(
+      walletUtils,
+      'Missing walletUtils. Button should not be enabled before wallet connection.',
+    );
     const toPause = Object.keys(checked).filter(name => checked[name]);
-    const offer = walletUtils?.makeVoteOnPauseLiquidationOffers(
+    const offer = walletUtils.makeVoteOnPauseLiquidationOffers(
       props.charterOfferId,
       toPause,
       minutesUntilClose,
     );
-    void walletUtils?.sendOffer(offer);
+    void walletUtils.sendOffer(offer);
   }
 
   const optionMessage = option => {

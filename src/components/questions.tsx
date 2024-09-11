@@ -312,12 +312,16 @@ export function VoteOnQuestion(props: {
 
   function voteFor(position) {
     console.log('voting for position', position);
-    const offer = walletUtils?.makeOfferToVote(
+    assert(
+      walletUtils,
+      'Missing walletUtils. Button should not be enabled before wallet connection.',
+    );
+    const offer = walletUtils.makeOfferToVote(
       props.ecOfferId,
       [position],
       details.questionHandle,
     );
-    void walletUtils?.sendOffer(offer);
+    void walletUtils.sendOffer(offer);
   }
   const {
     closingRule: { deadline },

@@ -127,17 +127,21 @@ const WalletButton = () => {
     setConnectWalletIndicator(false);
   };
 
-  return address ? (
-    <a
-      target="block-explorer"
-      href={explorerHref}
-      title="Block Explorer"
-      className="btn-header no-underline"
-    >
-      {address}
-      <FiExternalLink className="my-1 ml-2 -mr-1 h-4 w-5" />
-    </a>
-  ) : (
+  if (address) {
+    return (
+      <a
+        target="block-explorer"
+        href={explorerHref}
+        title="Block Explorer"
+        className="btn-header no-underline"
+      >
+        {address}
+        <FiExternalLink className="my-1 ml-2 -mr-1 h-4 w-5" />
+      </a>
+    );
+  }
+
+  return (
     <button className="btn-header flex flex-row gap-2" onClick={connectWallet}>
       <div>Connect Wallet</div>
       {connectWalletIndicator && (
