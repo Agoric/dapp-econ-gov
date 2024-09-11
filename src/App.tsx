@@ -141,7 +141,7 @@ const WalletButton = () => {
     <button className="btn-header flex flex-row gap-2" onClick={connectWallet}>
       <div>Connect Wallet</div>
       {connectWalletIndicator && (
-        <Oval height={20} width={20} color="var(--color-primary)" />
+        <Oval height={18} width={18} color="var(--color-primary)" />
       )}
     </button>
   );
