@@ -14,7 +14,7 @@ import ChangeOracles, { ChangeOraclesMode } from './ChangeOracles';
 import PauseLiquidations from './PauseLiquidations';
 import AuctioneerParamChange from './AuctioneerParamChange';
 import { useAtomValue } from 'jotai';
-import { walletUtilsAtom } from 'store/app';
+import { walletUtilsAtom, rpcUtilsAtom } from 'store/app';
 
 const ProposalTypes = {
   addOracles: 'Add Oracle Operators',
@@ -36,6 +36,7 @@ export default function VaultsPanel() {
     ProposalTypes.managerParamChange,
   );
   const walletUtils = useAtomValue(walletUtilsAtom);
+  const rpcUtils = useAtomValue(rpcUtilsAtom);
   const filterProposals = networkProposalFilter(walletUtils);
 
   const { data: walletCurrent, status } = usePublishedDatum(
@@ -48,6 +49,7 @@ export default function VaultsPanel() {
     status,
     walletCurrent,
     charterInvitationSpec.description,
+    rpcUtils?.agoricNames.instance.econCommitteeCharter,
   );
   const charterOfferId = charterInvitationStatus.acceptedIn;
 

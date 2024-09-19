@@ -429,6 +429,7 @@ export const inferInvitationStatus = (
   status: LoadStatus,
   current: CurrentWalletRecord | undefined,
   descriptionSubstr: string,
+  contractInstance,
 ) => {
   if (status === LoadStatus.Idle) {
     return { status: 'idle' };
@@ -440,7 +441,8 @@ export const inferInvitationStatus = (
   // first check for accepted
   const usedInvitationEntry = coerceEntries(current.offerToUsedInvitation).find(
     ([_, invitationAmount]) =>
-      invitationAmount.value[0].description.includes(descriptionSubstr),
+      invitationAmount.value[0].description.includes(descriptionSubstr) &&
+      invitationAmount.value[0].instance === contractInstance,
   );
   if (usedInvitationEntry) {
     return {
@@ -448,16 +450,17 @@ export const inferInvitationStatus = (
       acceptedIn: usedInvitationEntry[0],
     };
   }
-  // if that's not available, see if there's an invitation that can be used
 
+  // if that's not available, see if there's an invitation that can be used
   const invitationPurse = current.purses.find(p => {
     // xxx take this as param
     return p.brand.toString().includes('Invitation');
   });
-
   const invitation: Amount<'set'> | undefined =
-    invitationPurse.balance.value.find(a =>
-      a.description.includes(descriptionSubstr),
+    invitationPurse.balance.value.find(
+      a =>
+        a.description.includes(descriptionSubstr) &&
+        a.instance === contractInstance,
     );
   if (invitation) {
     return {

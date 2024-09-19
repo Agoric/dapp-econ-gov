@@ -11,7 +11,7 @@ import ProposeParamChange from './ProposeParamChange';
 import ProposePauseOffers from './ProposePauseOffers';
 import CharterGuidance from './CharterGuidance';
 import { useAtomValue } from 'jotai';
-import { walletUtilsAtom } from 'store/app';
+import { rpcUtilsAtom, walletUtilsAtom } from 'store/app';
 
 // TODO fetch list from RPC
 const anchors = [
@@ -44,6 +44,7 @@ export default function PsmPanel() {
   const [anchorName, setAnchorName] = useState(anchors[0]);
   const [proposalType, setProposalType] = useState(ProposalTypes.paramChange);
   const walletUtils = useAtomValue(walletUtilsAtom);
+  const rpcUtils = useAtomValue(rpcUtilsAtom);
   const { data: walletCurrent, status } = usePublishedDatum(
     walletUtils
       ? `wallet.${walletUtils.getWalletAddress()}.current`
@@ -54,6 +55,7 @@ export default function PsmPanel() {
     status,
     walletCurrent,
     charterInvitationSpec.description,
+    rpcUtils?.agoricNames.instance.econCommitteeCharter,
   );
 
   const previousOfferId = invitationStatus.acceptedIn;
