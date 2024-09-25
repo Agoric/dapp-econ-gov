@@ -4,6 +4,8 @@ import { phrasesList, getTimeUntilVoteClose, DEFAULT_TIMEOUT } from '../utils';
 describe('Make Proposal Tests', () => {
   let startTime;
   const networkPhrases = phrasesList[Cypress.env('AGORIC_NET') || 'local'];
+  const txRetryCount = 2;
+
   context('PSM tests', () => {
     it('should setup two econ committee member wallets', () => {
       cy.setupWallet({
@@ -73,17 +75,28 @@ describe('Make Proposal Tests', () => {
         .within(() => {
           cy.get('input').clear().type(networkPhrases.minutes);
         });
-      cy.get('[value="Propose Parameter Change"]').click();
-
-      // Submit proposal and wait for confirmation
-      cy.confirmTransaction();
-      cy.get('p')
-        .contains('sent', { timeout: DEFAULT_TIMEOUT })
-        .should('be.visible')
-        .then(() => {
-          startTime = Date.now();
-        });
     });
+
+    it(
+      'should confirm transaction for gov1 to create a proposal',
+      {
+        retries: {
+          runMode: txRetryCount,
+        },
+      },
+      () => {
+        cy.get('[value="Propose Parameter Change"]').click();
+
+        // Submit proposal and wait for confirmation
+        cy.confirmTransaction();
+        cy.get('p')
+          .contains('sent', { timeout: DEFAULT_TIMEOUT })
+          .should('be.visible')
+          .then(() => {
+            startTime = Date.now();
+          });
+      },
+    );
 
     it('should allow gov2 to vote on the proposal', () => {
       cy.visit(`/?agoricNet=${networkPhrases.network}`);
@@ -91,14 +104,25 @@ describe('Make Proposal Tests', () => {
       // Open vote, click on yes and submit
       cy.get('button').contains('Vote').click();
       cy.get('p').contains('YES').click();
-      cy.get('input:enabled[value="Submit Vote"]').click();
-
-      // Wait for vote to confirm
-      cy.confirmTransaction();
-      cy.get('p')
-        .contains('sent', { timeout: DEFAULT_TIMEOUT })
-        .should('be.visible');
     });
+
+    it(
+      'should confirm transaction for gov2 to vote on the proposal',
+      {
+        retries: {
+          runMode: txRetryCount,
+        },
+      },
+      () => {
+        cy.get('input:enabled[value="Submit Vote"]').click();
+
+        // Wait for vote to confirm
+        cy.confirmTransaction();
+        cy.get('p')
+          .contains('sent', { timeout: DEFAULT_TIMEOUT })
+          .should('be.visible');
+      },
+    );
 
     it('should allow gov1 to vote on the proposal', () => {
       cy.switchWallet('gov1');
@@ -107,14 +131,25 @@ describe('Make Proposal Tests', () => {
       // Open vote, click on yes and submit
       cy.get('button').contains('Vote').click();
       cy.get('p').contains('YES').click();
-      cy.get('input:enabled[value="Submit Vote"]').click();
-
-      // Wait for vote to confirm
-      cy.confirmTransaction();
-      cy.get('p')
-        .contains('sent', { timeout: DEFAULT_TIMEOUT })
-        .should('be.visible');
     });
+
+    it(
+      'should confirm transaction for gov1 to vote on the proposal',
+      {
+        retries: {
+          runMode: txRetryCount,
+        },
+      },
+      () => {
+        cy.get('input:enabled[value="Submit Vote"]').click();
+
+        // Wait for vote to confirm
+        cy.confirmTransaction();
+        cy.get('p')
+          .contains('sent', { timeout: DEFAULT_TIMEOUT })
+          .should('be.visible');
+      },
+    );
 
     it('should wait for proposal to pass', () => {
       // Wait for 1 minute to pass
@@ -160,17 +195,28 @@ describe('Make Proposal Tests', () => {
         .within(() => {
           cy.get('input').clear().type(networkPhrases.minutes);
         });
-      cy.get('[value="Propose Parameter Change"]').click();
-
-      // Submit proposal and wait for confirmation
-      cy.confirmTransaction();
-      cy.get('p')
-        .contains('sent', { timeout: DEFAULT_TIMEOUT })
-        .should('be.visible')
-        .then(() => {
-          startTime = Date.now();
-        });
     });
+
+    it(
+      'should confirm transaction for gov1 to create a proposal',
+      {
+        retries: {
+          runMode: txRetryCount,
+        },
+      },
+      () => {
+        cy.get('[value="Propose Parameter Change"]').click();
+
+        // Submit proposal and wait for confirmation
+        cy.confirmTransaction();
+        cy.get('p')
+          .contains('sent', { timeout: DEFAULT_TIMEOUT })
+          .should('be.visible')
+          .then(() => {
+            startTime = Date.now();
+          });
+      },
+    );
 
     it('should allow gov1 to vote on the proposal', () => {
       cy.visit(`/?agoricNet=${networkPhrases.network}`);
@@ -178,14 +224,25 @@ describe('Make Proposal Tests', () => {
       // Open vote, click on yes and submit
       cy.get('button').contains('Vote').click();
       cy.get('p').contains('YES').click();
-      cy.get('input:enabled[value="Submit Vote"]').click();
-
-      // Wait for vote to confirm
-      cy.confirmTransaction();
-      cy.get('p')
-        .contains('sent', { timeout: DEFAULT_TIMEOUT })
-        .should('be.visible');
     });
+
+    it(
+      'should confirm transaction for gov1 to vote on the proposal',
+      {
+        retries: {
+          runMode: txRetryCount,
+        },
+      },
+      () => {
+        cy.get('input:enabled[value="Submit Vote"]').click();
+
+        // Wait for vote to confirm
+        cy.confirmTransaction();
+        cy.get('p')
+          .contains('sent', { timeout: DEFAULT_TIMEOUT })
+          .should('be.visible');
+      },
+    );
 
     it('should allow gov2 to vote on the proposal', () => {
       cy.switchWallet('gov2');
@@ -194,14 +251,25 @@ describe('Make Proposal Tests', () => {
       // Open vote, click on yes and submit
       cy.get('button').contains('Vote').click();
       cy.get('p').contains('YES').click();
-      cy.get('input:enabled[value="Submit Vote"]').click();
-
-      // Wait for vote to confirm
-      cy.confirmTransaction();
-      cy.get('p')
-        .contains('sent', { timeout: DEFAULT_TIMEOUT })
-        .should('be.visible');
     });
+
+    it(
+      'should confirm transaction for gov2 to vote on the proposal',
+      {
+        retries: {
+          runMode: txRetryCount,
+        },
+      },
+      () => {
+        cy.get('input:enabled[value="Submit Vote"]').click();
+
+        // Wait for vote to confirm
+        cy.confirmTransaction();
+        cy.get('p')
+          .contains('sent', { timeout: DEFAULT_TIMEOUT })
+          .should('be.visible');
+      },
+    );
 
     it('should wait for proposal to pass', () => {
       // Wait for 1 minute to pass
