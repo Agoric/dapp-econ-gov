@@ -8,7 +8,7 @@ import { timestampPassed } from 'utils/helpers';
 import AcceptInvitation from './AcceptInvitation';
 import { OfferId, VoteOnQuestion } from './questions';
 import { useAtomValue } from 'jotai';
-import { walletUtilsAtom } from 'store/app';
+import { rpcUtilsAtom, walletUtilsAtom } from 'store/app';
 
 interface Props {}
 
@@ -90,6 +90,7 @@ function VoteOnQuestions(props: {
 
 export default function VotePanel(_props: Props) {
   const walletUtils = useAtomValue(walletUtilsAtom);
+  const rpcUtils = useAtomValue(rpcUtilsAtom);
   const { data, status } = usePublishedDatum(
     walletUtils
       ? `wallet.${walletUtils.getWalletAddress()}.current`
@@ -98,8 +99,12 @@ export default function VotePanel(_props: Props) {
   const { status: instanceStatus, data: instance } = usePublishedDatum(
     'agoricNames.instance',
   );
-
-  const invitationStatus = inferInvitationStatus(status, data, 'Voter');
+  const invitationStatus = inferInvitationStatus(
+    status,
+    data,
+    'Voter',
+    rpcUtils?.agoricNames.instance.economicCommittee,
+  );
   const previousOfferId = invitationStatus.acceptedIn;
 
   return (

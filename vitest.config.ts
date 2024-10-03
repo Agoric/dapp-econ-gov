@@ -6,6 +6,9 @@ export default mergeConfig(
   viteConfig,
   defineConfig({
     test: {
+      deps: {
+        inline: ['@agoric/rpc'],
+      },
       setupFiles: ['src/installSesLockdown.ts'],
       exclude: [...configDefaults.exclude, 'tests/e2e/**'],
     },
