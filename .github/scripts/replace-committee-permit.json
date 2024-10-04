@@ -1,0 +1,39 @@
+{
+  "consume": {
+    "psmKit": true,
+    "governedContractKits": true,
+    "board": true,
+    "chainStorage": true,
+    "diagnostics": true,
+    "zoe": "makeCoreProposalBehavior",
+    "highPrioritySendersManager": true,
+    "namesByAddressAdmin": true,
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "vatAdminSvc": "makeCoreProposalBehavior"
+  },
+  "produce": {
+    "econCharterKit": true,
+    "economicCommitteeKit": true,
+    "economicCommitteeCreatorFacet": true
+  },
+  "installation": {
+    "consume": {
+      "committee": true,
+      "binaryVoteCounter": true,
+      "econCommitteeCharter": true
+    },
+    "produce": "makeCoreProposalBehavior"
+  },
+  "instance": {
+    "produce": {
+      "economicCommittee": true,
+      "econCommitteeCharter": true
+    }
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}

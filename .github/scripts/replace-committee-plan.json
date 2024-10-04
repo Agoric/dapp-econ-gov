@@ -1,0 +1,12 @@
+{
+  "name": "replace-committee",
+  "script": "replace-committee.js",
+  "permit": "replace-committee-permit.json",
+  "bundles": [
+    {
+      "entrypoint": "@agoric/inter-protocol/src/proposals/replaceElectorate.js",
+      "bundleID": "b1-13b6ba5238011519410eee640db6eaa5d63f1c4043dc16b5c2ade364ff0f46a548b06ed67cc55e672f0c463a4b7b76e64e8f3c2bee5aa1240c4c7dded12d7623",
+      "fileName": "/Users/frazarshad/.agoric/cache/b1-13b6ba5238011519410eee640db6eaa5d63f1c4043dc16b5c2ade364ff0f46a548b06ed67cc55e672f0c463a4b7b76e64e8f3c2bee5aa1240c4c7dded12d7623.json"
+    }
+  ]
+}
