@@ -1,0 +1,69 @@
+name: E2E tests for Invitation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * *'
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label ||
+    github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run e2e tests
+        run: |
+          docker compose -f tests/e2e/docker-compose-invitation.yml --profile $SYNPRESS_PROFILE up --build --exit-code-from synpress
+        env:
+          # conditionals based on github event
+          SYNPRESS_PROFILE: 'synpress'
+          CYPRESS_AGORIC_NET: 'local'
+          # for docker-compose.yml
+          A3P_IMAGE_TAG: ${{ inputs.a3p_image_tag || 'latest' }}
+          COMPOSE_DOCKER_CLI_BUILD: 1
+          DOCKER_BUILDKIT: 1
+          DOCKER_DEFAULT_PLATFORM: linux/amd64
+          NGROK_AUTH: ${{ secrets.NGROK_AUTH }}
+          NGROK_BASIC_AUTH: ${{ secrets.NGROK_BASIC_AUTH }}
+          CYPRESS_PRIVATE_KEY_WITH_FUNDS: ${{ secrets.CYPRESS_PRIVATE_KEY_WITH_FUNDS }}
+          ANVIL_FORK_URL: ${{ secrets.ANVIL_FORK_URL }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
+          # cypress dashboard
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          COMMIT_INFO_MESSAGE: ${{ github.event.pull_request.title }}
+          COMMIT_INFO_SHA: ${{ github.event.pull_request.head.sha }}
+
+      - name: Archive e2e artifacts locally
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-artifacts
+          path: |
+            tests/e2e/docker/videos
+            tests/e2e/docker/screenshots
+        continue-on-error: true
+
+      - name: Notify About Failure
+        if: >
+          failure() && github.event_name != 'pull_request' &&
+          github.repository_owner == 'agoric'
+        uses: ./.github/actions/notify-status
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
