@@ -55,7 +55,6 @@ services:
         if [ "$CYPRESS_AGORIC_NET" == "local" ]; then
           nginx
         fi &&
-        bash scripts/setup-committee.sh &&
         yarn dev & sleep 5 &&
         yarn test:e2e --spec tests/e2e/specs/invitation.spec.js
       '
@@ -109,7 +108,7 @@ services:
       - display
     networks:
       - x11
-
+  # UNTIL https://github.com/Agoric/dapp-econ-gov/issues/138
   agd:
     profiles:
       - agd

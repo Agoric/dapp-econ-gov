@@ -2,14 +2,14 @@
   "consume": {
     "psmKit": true,
     "governedContractKits": true,
-    "board": true,
     "chainStorage": true,
-    "diagnostics": true,
-    "zoe": "makeCoreProposalBehavior",
     "highPrioritySendersManager": true,
     "namesByAddressAdmin": true,
+    "board": true,
+    "startUpgradable": true,
     "agoricNamesAdmin": "makeCoreProposalBehavior",
-    "vatAdminSvc": "makeCoreProposalBehavior"
+    "vatAdminSvc": "makeCoreProposalBehavior",
+    "zoe": "makeCoreProposalBehavior"
   },
   "produce": {
     "econCharterKit": true,

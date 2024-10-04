@@ -32,7 +32,7 @@ jobs:
         run: sleep 120
 
       - name: Setup committee and charter
-        run: bash /.github/scripts/setup-committee.sh
+        run: docker exec -i agoric_chain bash setup-committee.sh
 
       - name: Run e2e tests
         run: |
