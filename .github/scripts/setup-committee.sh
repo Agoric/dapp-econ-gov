@@ -22,8 +22,8 @@ sleep 5
 # Submit Proposal
 agd tx gov submit-proposal swingset-core-eval $PERMIT $SCRIPT \
   --title="Replace EC Committee and Charter" --description="Evaluate $SCRIPT" \
-  --deposit=10000000ubld --gas=auto --gas-adjustment=1.2 \
-  --from $walletName --chain-id agoriclocal --keyring-backend=test \
+  --deposit=10000000ubld --gas=auto --gas-adjustment $GAS_ADJUSTMENT \
+  --from $walletName --chain-id $CHAINID --keyring-backend=test \
   --yes -b block
 
 sleep 5
