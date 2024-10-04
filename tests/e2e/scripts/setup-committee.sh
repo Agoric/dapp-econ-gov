@@ -37,9 +37,8 @@ CONTAINER_ID=$(docker ps -q)
 # Construct the SIGN_BROADCAST_OPTS correctly
 SIGN_BROADCAST_OPTS="--keyring-backend=test --chain-id=$CHAINID --gas=auto --gas-adjustment=$GAS_ADJUSTMENT --yes -b block"
 
-# Execute the command in the Docker container
-docker exec -it $CONTAINER_ID bash -c \
-  "agd tx gov vote $PROPOSAL $VOTE_OPTION --from=validator $SIGN_BROADCAST_OPTS -o json > tx.json"
+agd tx gov vote $PROPOSAL $VOTE_OPTION --from=validator \
+$SIGN_BROADCAST_OPTS -o json > tx.json
 
 # View Proposal
 agd query gov proposals --output json \

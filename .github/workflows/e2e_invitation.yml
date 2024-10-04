@@ -25,6 +25,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Start agd
+        run: docker compose -f tests/e2e/docker-compose-invitation.yml --profile agd up -d
+
+      - name: Wait for enough blocks
+        run: sleep 120
+
+      - name: Setup committee and charter
+        run: bash /.github/scripts/setup-committee.sh
+
       - name: Run e2e tests
         run: |
           docker compose -f tests/e2e/docker-compose-invitation.yml --profile $SYNPRESS_PROFILE up --build --exit-code-from synpress
