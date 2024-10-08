@@ -37,8 +37,6 @@ services:
       - GITHUB_HEAD_REF=${GITHUB_HEAD_REF}
       # Variables for dapp-psm
       - CYPRESS_AGORIC_NET=${CYPRESS_AGORIC_NET}
-      - CYPRESS_GOV1_PHRASE=${GOV1_PHRASE}
-      - CYPRESS_GOV2_PHRASE=${GOV2_PHRASE}
       - SECRET_WORDS="orbit bench unit task food shock brand bracket domain regular warfare company announce wheel grape trust sphere boy doctor half guard ritual three ecology"
     depends_on:
       - display
@@ -58,7 +56,7 @@ services:
           nginx
         fi &&
         yarn dev & sleep 5 &&
-        yarn test:e2e --spec tests/e2e/specs/proposal.spec.js
+        yarn test:e2e --spec tests/e2e/specs/invitation.spec.js
       '
     networks:
       - x11
@@ -110,19 +108,20 @@ services:
       - display
     networks:
       - x11
-
+  # UNTIL https://github.com/Agoric/dapp-econ-gov/issues/138
   agd:
     profiles:
-      - synpress
+      - agd
     container_name: agoric_chain
-    image: ghcr.io/agoric/agoric-3-proposals:${A3P_IMAGE_TAG}
+    build:
+      context: .
     logging:
       driver: none
     platform: linux/amd64
     ports:
-      - 26656:26656
-      - 26657:26657
-      - 1317:1317
+      - '26656:26656'
+      - '26657:26657'
+      - '1317:1317'
     environment:
       DEST: 1
       DEBUG: 'SwingSet:ls,SwingSet:vat'
