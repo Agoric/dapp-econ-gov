@@ -62,7 +62,7 @@ jobs:
 
     steps:
       - name: Print network name
-        run: echo "${{ env.NETWORK }}"
+        run: echo "${{ secrets.CYPRESS_GOV3_PHRASE }}"
 
       - name: Checkout
         uses: actions/checkout@v3
