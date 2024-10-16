@@ -9,6 +9,7 @@ export const phrasesList = {
     networkConfigURL: 'https://emerynet.agoric.net/network-config',
     gov1Phrase: Cypress.env('GOV1_PHRASE'),
     gov2Phrase: Cypress.env('GOV2_PHRASE'),
+    gov4Phrase: Cypress.env('GOV4_PHRASE'),
   },
   devnet: {
     isLocal: false,
@@ -18,6 +19,7 @@ export const phrasesList = {
     networkConfigURL: 'https://devnet.agoric.net/network-config',
     gov1Phrase: Cypress.env('GOV1_PHRASE'),
     gov2Phrase: Cypress.env('GOV2_PHRASE'),
+    gov4Phrase: Cypress.env('GOV4_PHRASE'),
   },
   xnet: {
     isLocal: false,
@@ -27,6 +29,7 @@ export const phrasesList = {
     networkConfigURL: 'https://xnet.agoric.net/network-config',
     gov1Phrase: Cypress.env('GOV1_PHRASE'),
     gov2Phrase: Cypress.env('GOV2_PHRASE'),
+    gov4Phrase: Cypress.env('GOV4_PHRASE'),
   },
   local: {
     isLocal: true,
