@@ -94,6 +94,8 @@ jobs:
           GH_USERNAME: ${{ secrets.GH_USERNAME }}
           GOV1_PHRASE: ${{ inputs.gov1_mnemonic || secrets.GOV1_PHRASE }}
           GOV2_PHRASE: ${{ inputs.gov2_mnemonic || secrets.GOV2_PHRASE }}
+          GOV3_PHRASE: ${{ secrets.GOV3_PHRASE }}
+          GOV4_PHRASE: ${{ secrets.GOV4_PHRASE }}
           # cypress dashboard
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
