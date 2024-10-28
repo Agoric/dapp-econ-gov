@@ -8,7 +8,7 @@ describe('Make Proposal Tests', () => {
   const txRetryCount = 2;
 
   context('PSM tests', () => {
-    it('should setup two econ committee member wallets', () => {
+    it('should setup 4 econ committee member wallets', () => {
       cy.task('info', `${AGORIC_NET}`);
 
       cy.setupWallet({
@@ -19,12 +19,10 @@ describe('Make Proposal Tests', () => {
         secretWords: networkPhrases.gov2Phrase,
         walletName: 'gov2',
       });
-      if (AGORIC_NET !== 'local') {
-        cy.setupWallet({
-          secretWords: networkPhrases.gov4Phrase,
-          walletName: 'gov4',
-        });
-      }
+      cy.setupWallet({
+        secretWords: networkPhrases.gov4Phrase,
+        walletName: 'gov4',
+      });
     });
 
     it('should connect to wallet', () => {
@@ -307,10 +305,8 @@ describe('Make Proposal Tests', () => {
 
   context('Gov4 tests', () => {
     it('should allow gov4 to create a proposal', () => {
-      cy.skipWhen(AGORIC_NET === 'local');
-
       cy.switchWallet('gov4');
-      cy.visit(`/?agoricNet=${networkPhrases.network}`);
+      cy.reload();
 
       // open Values and select manager 0
       cy.get('button').contains('Vaults').click();
@@ -342,7 +338,6 @@ describe('Make Proposal Tests', () => {
         },
       },
       () => {
-        cy.skipWhen(AGORIC_NET === 'local');
         cy.get('[value="Propose Parameter Change"]').click();
 
         // Submit proposal and wait for confirmation
@@ -357,7 +352,6 @@ describe('Make Proposal Tests', () => {
     );
 
     it('should allow gov4 to vote on the proposal', () => {
-      cy.skipWhen(AGORIC_NET === 'local');
       cy.visit(`/?agoricNet=${networkPhrases.network}`);
 
       // Open vote, click on yes and submit
@@ -373,7 +367,6 @@ describe('Make Proposal Tests', () => {
         },
       },
       () => {
-        cy.skipWhen(AGORIC_NET === 'local');
         cy.get('input:enabled[value="Submit Vote"]').click();
 
         // Wait for vote to confirm
@@ -385,7 +378,6 @@ describe('Make Proposal Tests', () => {
     );
 
     it('should allow gov2 to vote on the proposal', () => {
-      cy.skipWhen(AGORIC_NET === 'local');
       cy.switchWallet('gov2');
       cy.visit(`/?agoricNet=${networkPhrases.network}`);
 
@@ -402,7 +394,6 @@ describe('Make Proposal Tests', () => {
         },
       },
       () => {
-        cy.skipWhen(AGORIC_NET === 'local');
         cy.get('input:enabled[value="Submit Vote"]').click();
 
         // Wait for vote to confirm
@@ -414,7 +405,6 @@ describe('Make Proposal Tests', () => {
     );
 
     it('should wait for proposal to pass', () => {
-      cy.skipWhen(AGORIC_NET === 'local');
       // Wait for 1 minute to pass
       cy.wait(getTimeUntilVoteClose(startTime, networkPhrases.minutes));
       cy.visit(`/?agoricNet=${networkPhrases.network}`);
