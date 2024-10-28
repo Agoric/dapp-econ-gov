@@ -20,6 +20,10 @@ describe('Make Proposal Tests', () => {
         walletName: 'gov2',
       });
       cy.setupWallet({
+        secretWords: networkPhrases.gov3Phrase,
+        walletName: 'gov3',
+      });
+      cy.setupWallet({
         secretWords: networkPhrases.gov4Phrase,
         walletName: 'gov4',
       });
@@ -62,10 +66,8 @@ describe('Make Proposal Tests', () => {
     });
 
     it('should allow gov2 to create a proposal', () => {
-      if (AGORIC_NET !== 'local') {
-        cy.switchWallet('gov2');
-        cy.reload();
-      }
+      cy.switchWallet('gov2');
+      cy.reload();
 
       // open PSM and select token
       cy.get('button').contains('PSM').click();
@@ -421,6 +423,94 @@ describe('Make Proposal Tests', () => {
         .within(() => {
           cy.get('span').contains('Change Accepted').should('be.visible');
         });
+    });
+  });
+
+  context('Gov3 tests', () => {
+    it('should not allow gov3 to create a proposal', () => {
+      cy.switchWallet('gov3');
+      cy.reload();
+      cy.contains('button', 'PSM').click();
+      cy.get('button').contains('AUSD').click();
+      cy.get('button').contains(networkPhrases.token).click();
+
+      // Change mint limit and proposal time to 1 min
+      cy.get('label')
+        .contains('Set Mint Limit')
+        .parent()
+        .within(() => {
+          cy.get('input').spread(_ => {
+            cy.get('input').clear().type(900);
+          });
+        });
+      cy.get('label')
+        .contains('Minutes until close of vote')
+        .parent()
+        .within(() => {
+          cy.get('input').clear().type(networkPhrases.minutes);
+        });
+
+      cy.get('[value="Propose Parameter Change"]').should('be.disabled');
+    });
+
+    it('should allow gov1 to create a proposal', () => {
+      cy.switchWallet('gov1');
+      cy.reload();
+
+      // open Values and select manager 0
+      cy.get('button').contains('Vaults').click();
+      cy.get('button').contains('Select Manager').click();
+      cy.get('button').contains('manager0').click();
+
+      // Change debt limit and proposal time to 1 min
+      cy.get('label')
+        .contains('DebtLimit')
+        .parent()
+        .within(() => {
+          cy.get('input').spread(element => {
+            cy.get('input').clear().type(element.value);
+          });
+        });
+      cy.get('label')
+        .contains('Minutes until close of vote')
+        .parent()
+        .within(() => {
+          cy.get('input').clear().type(networkPhrases.minutes);
+        });
+    });
+
+    it(
+      'should confirm transaction for gov1 to create a proposal',
+      {
+        retries: {
+          runMode: txRetryCount,
+        },
+      },
+      () => {
+        cy.get('[value="Propose Parameter Change"]').click();
+
+        // Submit proposal and wait for confirmation
+        cy.confirmTransaction();
+        cy.get('p')
+          .contains('sent', { timeout: DEFAULT_TIMEOUT })
+          .should('be.visible')
+          .then(() => {
+            startTime = Date.now();
+          });
+      },
+    );
+
+    it('should not allow gov3 to vote on the proposal', () => {
+      cy.switchWallet('gov3');
+      cy.reload();
+      cy.get('button').contains('Vote').click();
+
+      // UNTIL https://github.com/Agoric/dapp-econ-gov/issues/144
+      cy.get('p')
+        .contains(
+          'You must first have received an invitation to the Economic Committee.',
+        )
+        .should('be.visible');
     });
   });
 });
