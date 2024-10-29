@@ -24,14 +24,6 @@ on:
           - emerynet
           - devnet
           - xnet
-      gov1_mnemonic:
-        description: 'Mnemonic for gov1 wallet'
-        required: false
-        type: string
-      gov2_mnemonic:
-        description: 'Mnemonic for gov2 wallet'
-        required: false
-        type: string
       a3p_image_tag:
         description: 'Docker image tag for the a3p chain to use in testing'
         required: false
@@ -92,8 +84,10 @@ jobs:
           ANVIL_FORK_URL: ${{ secrets.ANVIL_FORK_URL }}
           GH_PAT: ${{ secrets.GH_PAT }}
           GH_USERNAME: ${{ secrets.GH_USERNAME }}
-          GOV1_PHRASE: ${{ inputs.gov1_mnemonic || secrets.GOV1_PHRASE }}
-          GOV2_PHRASE: ${{ inputs.gov2_mnemonic || secrets.GOV2_PHRASE }}
+          GOV1_PHRASE: ${{ secrets.GOV1_PHRASE }}
+          GOV2_PHRASE: ${{ secrets.GOV2_PHRASE }}
+          GOV3_PHRASE: ${{ secrets.GOV3_PHRASE }}
+          GOV4_PHRASE: ${{ secrets.GOV4_PHRASE }}
           # cypress dashboard
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}

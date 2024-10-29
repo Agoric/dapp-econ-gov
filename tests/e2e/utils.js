@@ -9,6 +9,9 @@ export const phrasesList = {
     networkConfigURL: 'https://emerynet.agoric.net/network-config',
     gov1Phrase: Cypress.env('GOV1_PHRASE'),
     gov2Phrase: Cypress.env('GOV2_PHRASE'),
+    // UNTIL https://github.com/Agoric/dapp-econ-gov/issues/144
+    gov3Phrase: Cypress.env('GOV4_PHRASE'),
+    gov4Phrase: Cypress.env('GOV3_PHRASE'),
   },
   devnet: {
     isLocal: false,
@@ -18,6 +21,9 @@ export const phrasesList = {
     networkConfigURL: 'https://devnet.agoric.net/network-config',
     gov1Phrase: Cypress.env('GOV1_PHRASE'),
     gov2Phrase: Cypress.env('GOV2_PHRASE'),
+    // UNTIL https://github.com/Agoric/dapp-econ-gov/issues/144
+    gov3Phrase: Cypress.env('GOV4_PHRASE'),
+    gov4Phrase: Cypress.env('GOV3_PHRASE'),
   },
   xnet: {
     isLocal: false,
@@ -27,6 +33,9 @@ export const phrasesList = {
     networkConfigURL: 'https://xnet.agoric.net/network-config',
     gov1Phrase: Cypress.env('GOV1_PHRASE'),
     gov2Phrase: Cypress.env('GOV2_PHRASE'),
+    // UNTIL https://github.com/Agoric/dapp-econ-gov/issues/144
+    gov3Phrase: Cypress.env('GOV4_PHRASE'),
+    gov4Phrase: Cypress.env('GOV3_PHRASE'),
   },
   local: {
     isLocal: true,
@@ -37,6 +46,11 @@ export const phrasesList = {
       'such field health riot cost kitten silly tube flash wrap festival portion imitate this make question host bitter puppy wait area glide soldier knee',
     gov2Phrase:
       'physical immune cargo feel crawl style fox require inhale law local glory cheese bring swear royal spy buyer diesel field when task spin alley',
+    // UNTIL https://github.com/Agoric/dapp-econ-gov/issues/144
+    gov3Phrase:
+      'spike siege world rather ordinary upper napkin voice brush oppose junior route trim crush expire angry seminar anchor panther piano image pepper chest alone',
+    gov4Phrase:
+      'tackle hen gap lady bike explain erode midnight marriage wide upset culture model select dial trial swim wood step scan intact what card symptom',
   },
 };
 
