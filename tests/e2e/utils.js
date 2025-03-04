@@ -16,7 +16,6 @@ export const phrasesList = {
       'spike siege world rather ordinary upper napkin voice brush oppose junior route trim crush expire angry seminar anchor panther piano image pepper chest alone',
     gov4Phrase:
       'smile unveil sketch gaze length bulb goddess street case exact table fetch robust chronic power choice endorse toward pledge dish access sad illegal dance',
- 
   },
   devnet: {
     isLocal: false,
