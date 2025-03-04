@@ -10,6 +10,7 @@ ENV NODE_OPTIONS=--dns-result-order=ipv4first
 RUN mkdir /app
 WORKDIR /app
 
+RUN curl https://dl.google.com/linux/linux_signing_key.pub | tee /etc/apt/trusted.gpg.d/google.asc >/dev/null
 RUN apt update && apt install -y nginx
 
 COPY tests/e2e/nginx.conf /etc/nginx/sites-available/default
