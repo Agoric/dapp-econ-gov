@@ -15,6 +15,7 @@ import {
   AgoricChainStoragePathKind,
   makeAgoricChainStorageWatcher,
 } from '@agoric/rpc';
+import { makeVstorageKit } from '@agoric/client-utils';
 import { sample } from 'lodash-es';
 import { notifyError } from 'utils/displayFunctions';
 import { useEffect, useState } from 'react';
@@ -61,33 +62,6 @@ const makeAgoricNames = async (
   return Object.fromEntries(entries);
 };
 
-// Until casting supports querying keys https://github.com/Agoric/agoric-sdk/issues/6690
-const fetchVstorageKeys = async (
-  rpcAddr: string,
-  path: string,
-  height?: number,
-) => {
-  const options = {
-    method: 'POST',
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'abci_query',
-      params: {
-        path: '/custom/vstorage/children/' + path,
-        height: height && height.toString(),
-      }, // height must be a string (bigint)
-    }),
-  };
-
-  const res = await fetch(rpcAddr, options);
-  const d = await res.json();
-  return (
-    d.result.response.value &&
-    JSON.parse(atob(d.result.response.value)).children
-  );
-};
-
 const usp = new URLSearchParams(window.location.search);
 export const agoricNet = usp.get('agoricNet') || 'main';
 console.log('RPC server:', agoricNet);
@@ -99,14 +73,21 @@ export const makeRpcUtils = async () => {
   const { rpcAddrs, chainName } = networkConfig;
   const leader = makeLeader(archivingAlternative(chainName, rpcAddrs[0]), {});
 
+  const { vstorage: vst } = makeVstorageKit({ fetch }, { chainName, rpcAddrs });
+
   // XXX memoize on path
   const follow = (path: string) =>
     makeFollower(path, leader, { unserializer: marshal, proof: 'none' });
 
   const agoricNames = await makeAgoricNames(follow);
   const vstorage = {
-    keys: (path: string, blockHeight?: number) =>
-      fetchVstorageKeys(sample(rpcAddrs), path, blockHeight),
+    keys: async (path: string, blockHeight = 0) => {
+      const response = await vst.readStorage(path, {
+        kind: 'children',
+        height: String(blockHeight),
+      });
+      return response.children;
+    },
   };
 
   const storageWatcher = makeAgoricChainStorageWatcher(
