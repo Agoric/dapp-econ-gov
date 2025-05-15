@@ -23,7 +23,7 @@
     "@agoric/cosmic-proto": "^0.5.0-u20.0",
     "@agoric/ertp": "^0.16.2",
     "@agoric/notifier": "^0.6.2",
-    "@agoric/rpc": "^0.0.2-dev-2c6fbc5.0",
+    "@agoric/rpc": "^0.10.0",
     "@agoric/smart-wallet": "^0.5.3",
     "@agoric/ui-components": "~0.3.8",
     "@agoric/wallet-backend": "^0.14.3",
