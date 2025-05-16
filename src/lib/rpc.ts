@@ -70,7 +70,7 @@ export const makeRpcUtils = async () => {
   const netConfigURL = networkConfigUrl(agoricNet);
   const networkConfig = await fromAgoricNet(agoricNet);
 
-  const { rpcAddrs, chainName } = networkConfig;
+  const { rpcAddrs, chainName, apiAddrs } = networkConfig;
   const leader = makeLeader(archivingAlternative(chainName, rpcAddrs[0]), {});
 
   const { vstorage: vst } = makeVstorageKit({ fetch }, { chainName, rpcAddrs });
@@ -91,7 +91,7 @@ export const makeRpcUtils = async () => {
   };
 
   const storageWatcher = makeAgoricChainStorageWatcher(
-    sample(rpcAddrs),
+    sample(apiAddrs),
     chainName,
     e => {
       console.error(e);
