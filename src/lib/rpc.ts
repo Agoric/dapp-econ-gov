@@ -70,7 +70,7 @@ export const makeRpcUtils = async () => {
   const netConfigURL = networkConfigUrl(agoricNet);
   const networkConfig = await fromAgoricNet(agoricNet);
 
-  const { rpcAddrs, chainName } = networkConfig;
+  const { rpcAddrs, chainName, apiAddrs } = networkConfig;
   const leader = makeLeader(archivingAlternative(chainName, rpcAddrs[0]), {});
 
   const { vstorage: vst } = makeVstorageKit({ fetch }, { chainName, rpcAddrs });
@@ -91,9 +91,13 @@ export const makeRpcUtils = async () => {
   };
 
   const storageWatcher = makeAgoricChainStorageWatcher(
-    sample(rpcAddrs),
+    sample(apiAddrs),
     chainName,
-    marshal.unserialize,
+    e => {
+      console.error(e);
+      return;
+    },
+    marshal,
   );
 
   return {
@@ -113,6 +117,7 @@ export enum LoadStatus {
   Idle = 'idle',
   Waiting = 'waiting',
   Received = 'received',
+  Failed = 'failed',
 }
 
 /**
@@ -159,24 +164,11 @@ export const usePublishedDatum = (path?: string) => {
     const { storageWatcher } = rpcUtils;
     setStatus(LoadStatus.Waiting);
 
-    let didError = false;
     return storageWatcher.watchLatest(
       [AgoricChainStoragePathKind.Data, `published.${path}`],
       value => {
         setData(value);
-        setStatus(LoadStatus.Received);
-      },
-      e => {
-        if (didError) {
-          console.error(e);
-          return;
-        }
-        didError = true;
-        notifyError(
-          new Error(
-            'Error reading vstorage data for path "' + path + '": ' + e,
-          ),
-        );
+        setStatus(value === '' ? LoadStatus.Failed : LoadStatus.Received);
       },
     );
   }, [path, rpcUtils]);
