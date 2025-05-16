@@ -117,6 +117,7 @@ export enum LoadStatus {
   Idle = 'idle',
   Waiting = 'waiting',
   Received = 'received',
+  Failed = 'failed',
 }
 
 /**
@@ -167,7 +168,7 @@ export const usePublishedDatum = (path?: string) => {
       [AgoricChainStoragePathKind.Data, `published.${path}`],
       value => {
         setData(value);
-        setStatus(LoadStatus.Received);
+        setStatus(value === '' ? LoadStatus.Failed : LoadStatus.Received);
       },
     );
   }, [path, rpcUtils]);
