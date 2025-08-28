@@ -10,6 +10,7 @@ export type MinimalNetworkConfig = {
   rpcAddrs: string[];
   chainName: string;
   notices?: NetworkNotice[];
+  apiAddrs: string[];
 };
 
 export const activeNotices = (

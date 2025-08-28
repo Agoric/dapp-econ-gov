@@ -10,7 +10,7 @@ import {
   makeLeader,
 } from '@agoric/casting';
 import { makeImportContext } from './makeImportContext';
-import { archivingAlternative, networkConfigUrl, rpcUrl } from 'config';
+import { archivingAlternative, networkConfigUrl, rpcUrl, apiUrl } from 'config';
 import {
   AgoricChainStoragePathKind,
   makeAgoricChainStorageWatcher,
@@ -31,7 +31,7 @@ export const marshal = makeImportContext().fromBoard;
 const fromAgoricNet = (str: string): Promise<MinimalNetworkConfig> => {
   const [netName, chainName] = str.split(',');
   if (chainName) {
-    return Promise.resolve({ chainName, rpcAddrs: [rpcUrl(netName)] });
+    return Promise.resolve({ chainName, rpcAddrs: [rpcUrl(netName)], apiAddrs: [apiUrl(netName)] });
   }
   return fetch(networkConfigUrl(netName)).then(res => res.json());
 };
@@ -70,7 +70,7 @@ export const makeRpcUtils = async () => {
   const netConfigURL = networkConfigUrl(agoricNet);
   const networkConfig = await fromAgoricNet(agoricNet);
 
-  const { rpcAddrs, chainName } = networkConfig;
+  const { rpcAddrs, chainName, apiAddrs } = networkConfig;
   const leader = makeLeader(archivingAlternative(chainName, rpcAddrs[0]), {});
 
   const { vstorage: vst } = makeVstorageKit({ fetch }, { chainName, rpcAddrs });
@@ -91,7 +91,7 @@ export const makeRpcUtils = async () => {
   };
   let didError = false;
   const storageWatcher = makeAgoricChainStorageWatcher(
-    sample(rpcAddrs),
+    sample(apiAddrs),
     chainName,
     e => {
       if (didError) {
