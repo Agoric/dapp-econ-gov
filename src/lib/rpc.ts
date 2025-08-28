@@ -89,11 +89,19 @@ export const makeRpcUtils = async () => {
       return response.children;
     },
   };
-
+  let didError = false;
   const storageWatcher = makeAgoricChainStorageWatcher(
     sample(rpcAddrs),
     chainName,
-    marshal.unserialize,
+    e => {
+      if (didError) {
+        console.error(e);
+        return;
+      }
+      didError = true;
+      notifyError(new Error('Error reading vstorage data for path "' + e));
+    },
+    marshal,
   );
 
   return {
@@ -158,25 +166,11 @@ export const usePublishedDatum = (path?: string) => {
 
     const { storageWatcher } = rpcUtils;
     setStatus(LoadStatus.Waiting);
-
-    let didError = false;
     return storageWatcher.watchLatest(
       [AgoricChainStoragePathKind.Data, `published.${path}`],
       value => {
         setData(value);
         setStatus(LoadStatus.Received);
-      },
-      e => {
-        if (didError) {
-          console.error(e);
-          return;
-        }
-        didError = true;
-        notifyError(
-          new Error(
-            'Error reading vstorage data for path "' + path + '": ' + e,
-          ),
-        );
       },
     );
   }, [path, rpcUtils]);
