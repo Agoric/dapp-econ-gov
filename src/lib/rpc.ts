@@ -31,7 +31,11 @@ export const marshal = makeImportContext().fromBoard;
 const fromAgoricNet = (str: string): Promise<MinimalNetworkConfig> => {
   const [netName, chainName] = str.split(',');
   if (chainName) {
-    return Promise.resolve({ chainName, rpcAddrs: [rpcUrl(netName)], apiAddrs: [apiUrl(netName)] });
+    return Promise.resolve({
+      chainName,
+      rpcAddrs: [rpcUrl(netName)],
+      apiAddrs: [apiUrl(netName)],
+    });
   }
   return fetch(networkConfigUrl(netName)).then(res => res.json());
 };
