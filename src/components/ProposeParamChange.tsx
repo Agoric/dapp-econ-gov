@@ -121,7 +121,7 @@ export default function ProposeParamChange(props: Props) {
         transition={{ type: 'tween' }}
       >
         <form onSubmit={handleSubmit}>
-          {Object.entries(data.current).map(([name, value]) => (
+          {Object.entries(data.current || {}).map(([name, value]) => (
             <div className="mb-2" key={name}>
               <label className="block">
                 <span className="text-gray-700">{paramLabel(name)}</span>

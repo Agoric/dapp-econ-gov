@@ -45,6 +45,9 @@ export const networkConfigUrl = (agoricNetName: string) => {
 export const rpcUrl = agoricNetSubdomain =>
   `https://${agoricNetSubdomain}.rpc.agoric.net:443`;
 
+export const apiUrl = agoricNetSubdomain =>
+  `https://${agoricNetSubdomain}.api.agoric.net:443`;
+
 /**
  * Look up an archiving version of the host, if available.
  */

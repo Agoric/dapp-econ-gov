@@ -10,7 +10,7 @@ import {
   makeLeader,
 } from '@agoric/casting';
 import { makeImportContext } from './makeImportContext';
-import { archivingAlternative, networkConfigUrl, rpcUrl } from 'config';
+import { archivingAlternative, networkConfigUrl, rpcUrl, apiUrl } from 'config';
 import {
   AgoricChainStoragePathKind,
   makeAgoricChainStorageWatcher,
@@ -31,7 +31,11 @@ export const marshal = makeImportContext().fromBoard;
 const fromAgoricNet = (str: string): Promise<MinimalNetworkConfig> => {
   const [netName, chainName] = str.split(',');
   if (chainName) {
-    return Promise.resolve({ chainName, rpcAddrs: [rpcUrl(netName)] });
+    return Promise.resolve({
+      chainName,
+      rpcAddrs: [rpcUrl(netName)],
+      apiAddrs: [apiUrl(netName)],
+    });
   }
   return fetch(networkConfigUrl(netName)).then(res => res.json());
 };
@@ -70,7 +74,7 @@ export const makeRpcUtils = async () => {
   const netConfigURL = networkConfigUrl(agoricNet);
   const networkConfig = await fromAgoricNet(agoricNet);
 
-  const { rpcAddrs, chainName } = networkConfig;
+  const { rpcAddrs, chainName, apiAddrs } = networkConfig;
   const leader = makeLeader(archivingAlternative(chainName, rpcAddrs[0]), {});
 
   const { vstorage: vst } = makeVstorageKit({ fetch }, { chainName, rpcAddrs });
@@ -89,11 +93,19 @@ export const makeRpcUtils = async () => {
       return response.children;
     },
   };
-
+  let didError = false;
   const storageWatcher = makeAgoricChainStorageWatcher(
-    sample(rpcAddrs),
+    sample(apiAddrs),
     chainName,
-    marshal.unserialize,
+    e => {
+      if (didError) {
+        console.error(e);
+        return;
+      }
+      didError = true;
+      notifyError(new Error('Error reading vstorage data for path "' + e));
+    },
+    marshal,
   );
 
   return {
@@ -158,25 +170,11 @@ export const usePublishedDatum = (path?: string) => {
 
     const { storageWatcher } = rpcUtils;
     setStatus(LoadStatus.Waiting);
-
-    let didError = false;
     return storageWatcher.watchLatest(
       [AgoricChainStoragePathKind.Data, `published.${path}`],
       value => {
         setData(value);
         setStatus(LoadStatus.Received);
-      },
-      e => {
-        if (didError) {
-          console.error(e);
-          return;
-        }
-        didError = true;
-        notifyError(
-          new Error(
-            'Error reading vstorage data for path "' + path + '": ' + e,
-          ),
-        );
       },
     );
   }, [path, rpcUtils]);
